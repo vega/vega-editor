@@ -2,7 +2,9 @@
 .idea
 _site
 coverage
+LICENSE
 node_modules
-bower_components
+package.json
 temp
-vendor
+README.md
+scripts
