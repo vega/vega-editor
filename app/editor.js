@@ -6,7 +6,9 @@ var ved = {
 };
 
 ved.params = function() {
-  return location.search.slice(1)
+  var query = location.search.slice(1);
+  if (query.slice(-1) === '/') query = query.slice(0,-1);
+  return query
     .split('&')
     .map(function(x) { return x.split('='); })
     .reduce(function(a, b) {
@@ -150,25 +152,25 @@ ved.init = function(el, dir) {
     el.select('.btn_spec_parse').on('click', ved.parse);
     d3.select(window).on('resize', ved.resize);
     ved.resize();
+
+    ved.specs = STATIC_SPECS
+      .concat(INTERACTIVE_SPECS)
+      .map(function(d) { return d.name; });
   
     // Handle application parameters
     var p = ved.params();
-
     if (p.renderer) {
       ren.node().selectedIndex = p.renderer.toLowerCase() === 'svg' ? 1 : 0;
       ved.renderType = p.renderer;
     }
-
     if (p.spec) {
       var spec = decodeURIComponent(p.spec),
-          specs = STATIC_SPECS.concat(INTERACTIVE_SPECS).map(function(d) { return d.name; }),
-          idx = specs.indexOf(spec) + 1;
+          idx = ved.specs.indexOf(spec) + 1;
 
       if (idx > 0) {
         sel.node().selectedIndex = idx;
         ved.select();
       } else {
-        console.log('trying', spec);
         try {
           var json = JSON.parse(spec);
           ved.select(spec);
@@ -178,5 +180,24 @@ ved.init = function(el, dir) {
         }
       }
     }
+
+    // Handle post messages
+    window.addEventListener('message', function(evt) {
+      var data = evt.data;
+      console.log('[Vega-Editor] Received Message', evt.origin, data);
+
+      // send acknowledgement
+      if (data.spec || data.file) {
+        evt.source.postMessage(true, '*');
+      }
+
+      // load spec
+      if (data.spec) {
+        ved.select(data.spec);
+      } else if (data.file) {
+        sel.node().selectedIndex = ved.specs.indexOf(data.file) + 1;
+        ved.select();
+      }
+    }, false);
   });
 };
