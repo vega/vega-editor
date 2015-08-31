@@ -1,6 +1,8 @@
 var API = 'https://api.github.com/gists',
     d3 = require('d3');
 
+// _auth_ is an array of the form [oauth_token] or [username, password]
+// if _auth_ is unspecified, anonymous gists will be created
 function GistAPI(auth) {
   this._h = {Accept: 'application/vnd.github.v3+json'};
   if (auth) {

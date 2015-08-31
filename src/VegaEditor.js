@@ -10,6 +10,8 @@ function VegaEditor() {
 }
 
 VegaEditor.version = '__VERSION__';
+
+// XXX For testing purposes
 VegaEditor.VegaGists = require('./VegaGists');
 
 var proto = VegaEditor.prototype;

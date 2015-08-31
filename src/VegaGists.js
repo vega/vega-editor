@@ -36,27 +36,7 @@ function onDelete(error, id) {
   }
 }
 
-proto.create = function(ved, name) {
-  var self = this,
-      done = onSave.bind(self);
-
-  self._id = null; // creating new gist, clear any prior id
-  marshal(ved, name, function(error, data) {
-    self._api.post(data, done);
-  });
-};
-
-proto.save = function(ved) {
-  var self = this,
-      done = onSave.bind(self),
-      id = this._id;
-
-  if (!id) throw Error('No current gist exists.');
-  marshal(ved, function(error, data) {
-    self._api.patch(id, data, done);
-  });
-};
-
+// Open an existing GitHub Gist Vega example.
 proto.open = function(ved, id) {
   var self = this;
   self._api.get(id, function(error, gist) {
@@ -68,17 +48,41 @@ proto.open = function(ved, id) {
       // request file directly
       d3.text(spec_file.raw_url, function(error, data) {
         if (error) throw Error(error);
-        open(ved, data, gist);
+        ved.open(data);
         self._id = id;
       });
     } else {
       // use file contents
-      open(ved, spec_file.content, gist);
+      ved.open(spec_file.content);
       self._id = id;
     }
   });
 };
 
+// Create a new GitHub Gist Vega example.
+proto.create = function(ved, name) {
+  var self = this,
+      done = onSave.bind(self);
+
+  self._id = null; // creating new gist, clear any prior id
+  marshal(ved, name, function(error, data) {
+    self._api.post(data, done);
+  });
+};
+
+// Update the current GitHub Gist Vega example.
+proto.save = function(ved, name) {
+  var self = this,
+      done = onSave.bind(self),
+      id = this._id;
+
+  if (!id) throw Error('No current gist exists.');
+  marshal(ved, name, function(error, data) {
+    self._api.patch(id, data, done);
+  });
+};
+
+// Delete the current GitHub Gist Vega example.
 proto.delete = function() {
   var self = this, id = this._id;
   if (!id) throw Error('No current gist exists.');
@@ -87,29 +91,24 @@ proto.delete = function() {
   });
 };
 
-function open(ved, spec_text, gist) {
-  // TODO handle data sets? (Set Vega base URL to gist 'url'?)
-  ved.open(spec_text);
-}
-
 function marshal(ved, name, callback) {
+  // TODO update baseURL as needed...
+  var baseURL = HOST + 'app/'; // point to version 1.x for now
+
   var data = {
-    'description': name,
-    'public': false, // TODO toggle
+    'public': false, // TODO enable user setting
     'files': {
       'README.md': {'content': name},
-      'index.html': {'content': index_html()}
+      'index.html': {'content': index_html(baseURL)}
     }
   };
+  if (name) data.description = name;
+  data.files[SPEC_FILE] = {'content': ved.editor.getValue()};
 
-  var text = ved.editor.getValue();
-  data.files[SPEC_FILE] = {'content': text};
-
-  // TODO collect data, etc files...
   callback(null, data);
 }
 
-function index_html(embed_spec) {
+function index_html(baseURL) {
   return '<!DOCTYPE HTML>\n<meta charset="utf-8">\n' +
   '<link type="text/css" href="' + HOST + 'editor.css">\n' +
   DEPS.map(function(file) {
@@ -117,6 +116,7 @@ function index_html(embed_spec) {
   }).join('\n') + '\n' +
   '<div id="view"></div>\n' +
   '<script>\n' +
+  (baseURL ? '  vg.config.load.baseURL = "' + baseURL + '";\n' : '') +
   '  vg.embed("#view", "spec.json", function(view, spec) {\n' +
   '    window.vega = {view: view, spec: spec};\n' +
   '  });\n' +
