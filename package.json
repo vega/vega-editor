@@ -1,6 +1,6 @@
 {
   "name": "vega-editor",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Web-based Vega authoring environment.",
   "keywords": [
     "vega",
@@ -24,21 +24,52 @@
     {"name": "Ruijia (Iris) Wang"}
   ],
   "license": "BSD-3-Clause",
-  "dependencies": {
+  "devDependencies": {
     "ace-builds": "ajaxorg/ace-builds",
     "d3": "^3.5.6",
     "d3-cloud": "jasondavies/d3-cloud",
     "d3-geo-projection": "^0.2.15",
     "topojson": "^1.6.19",
     "vega": "latest",
-    "vega-embed": "latest"
-  },
-  "devDependencies": {
-    "chokidar": "^1.0.3"
+    "vega-embed": "latest",
+    "browserify": "^10.2.6",
+    "browserify-shim": "^3.8.9",
+    "browserify-versionify": "^1.0.4",
+    "chai": "^3.0.0",
+    "chokidar": "^1.0.3",
+    "jshint": "^2.8.0",
+    "mocha": "^2.2.5",
+    "tv4": "^1.1.12",
+    "uglify-js": "^2.4.24"
   },
   "scripts": {
     "deploy": "scripts/deploy.sh",
+    "lint": "jshint src/",
+    "build": "browserify src/VegaEditor.js -d -s VegaEditor > vega-editor.js",
+    "postbuild": "uglifyjs vega-editor.js -cm > vega-editor.min.js",
     "vendor": "npm install && scripts/vendor.sh",
     "watch": "node scripts/watch.js"
+  },
+    "browser": {
+    "buffer": false,
+    "canvas": false,
+    "fs": false,
+    "http": false,
+    "request": false,
+    "sync-request": false,
+    "url": false
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim",
+      "browserify-versionify"
+    ]
+  },
+  "browserify-shim": {
+    "d3": "global:d3",
+    "d3.layout.cloud": "global:d3.layout.cloud",
+    "canvas": "global:canvas",
+    "topojson": "global:topojson",
+    "vega": "global:vg"
   }
 }

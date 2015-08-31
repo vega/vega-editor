@@ -4,4 +4,8 @@ _site
 coverage
 node_modules
 temp
-vendor
+app/vendor
+app/vega-editor.js
+app/vega-editor.min.js
+vega-editor.js
+vega-editor.min.js

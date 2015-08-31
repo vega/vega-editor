@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <title>Vega Editor</title>
-    <link rel="stylesheet" type="text/css" href="app/editor.css"/>
+    <link rel="stylesheet" type="text/css" href="editor.css"/>
     <script src="vendor/topojson.js"charset="utf-8"></script>
     <script src="vendor/d3.min.js" charset="utf-8"></script>
     <script src="vendor/d3.geo.projection.min.js" charset="utf-8"></script>
@@ -11,12 +11,11 @@
     <script src="vendor/ace/ace.js" charset="utf-8"></script>
     <script src="vendor/vega.js" charset="utf-8"></script>
     <script src="vendor/vega-embed.js" charset="utf-8"></script>
-    <script src="app/specs.js" charset="utf-8"></script>
-    <script src="app/editor.js" charset="utf-8"></script>
+    <script src="vega-editor.js" charset="utf-8"></script>
     <style> body { margin: 0px; overflow: hidden; } </style>
   </head>
   <body>
-    <script> ved.init('body', 'app/'); </script>
+    <script> var ve = new VegaEditor().init('body'); </script>
     <script type="text/javascript">
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

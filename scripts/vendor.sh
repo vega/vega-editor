@@ -1,6 +1,6 @@
 #!/bin/bash
 ACE=node_modules/ace-builds/src-min
-TARGET=vendor
+TARGET=app/vendor
 
 echo "Copying dependencies to '$TARGET'."
 

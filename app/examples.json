@@ -1,5 +1,5 @@
-var SPECS = {
-  'Static': [
+{
+  "Static": [
     { "name": "arc" },
     { "name": "area" },
     { "name": "bar" },
@@ -31,7 +31,7 @@ var SPECS = {
     { "name": "weather" },
     { "name": "wordcloud" }
   ],
-  'Interactive': [
+  "Interactive": [
     {
       "name": "airports",
       "desc": "Based on <a href='https://mbostock.github.io/d3/talk/20111116/airports.html'>U.S. Airports, 2008</a> by Mike Bostock."
@@ -63,7 +63,7 @@ var SPECS = {
     { "name": "shiftclick_select" },
     { "name": "tooltip" }
   ],
-  'Parameterized': [
+  "Parameterized": [
     { 
       "name": "airports-params",
       "desc": "Uses <a href='http://github.com/vega/vega-embed'>vega-embed</a> to parameterize the visualization."
@@ -81,4 +81,4 @@ var SPECS = {
       "desc": "Uses <a href='http://github.com/vega/vega-embed'>vega-embed</a> to parameterize the visualization."
     }
   ]
-};
+}
