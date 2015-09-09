@@ -19,6 +19,27 @@
             "canvas",
             "svg"
           ]
+        },
+        "actions": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "export": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": "boolean"
+                },
+                "editor": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
         }
       },
       "required": [
@@ -44,6 +65,27 @@
             "canvas",
             "svg"
           ]
+        },
+        "actions": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "export": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": "boolean"
+                },
+                "editor": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
         }
       },
       "required": [
@@ -67,6 +109,27 @@
           "enum": [
             "canvas",
             "svg"
+          ]
+        },
+        "actions": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "export": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": "boolean"
+                },
+                "editor": {
+                  "type": "boolean"
+                }
+              }
+            }
           ]
         }
       },
