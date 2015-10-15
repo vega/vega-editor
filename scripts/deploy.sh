@@ -37,8 +37,18 @@ rm -rf $STAGE
 
 # Add, commit and push files
 git add -A
-# force node_modules because it is usually ignored
-git add node_modules -f
+
+# force add some files we want node_modules, node_modules is ignored by git
+git add node_modules/d3/d3.min.js -f
+git add node_modules/d3-geo-projection/d3.geo.projection.min.js -f
+git add node_modules/d3-cloud/d3.layout.cloud.js -f
+git add node_modules/topojson/topojson.js -f
+git add node_modules/vega/vega* -f
+git add node_modules/vega-embed/vega-embed* -f
+git add node_modules/ace-builds/src-min/ace.js -f
+git add node_modules/ace-builds/src-min/mode-json.js -f
+git add node_modules/ace-builds/src-min/worker-json.js -f
+
 git commit -m "Update deployed files."
 git push origin gh-pages
 
