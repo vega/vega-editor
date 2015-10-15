@@ -1,0 +1,29 @@
+{
+  "name": "vega-editor",
+  "version": "0.1",
+  "homepage": "https://github.com/vega/vega-editor",
+  "authors": [
+    "Jeffrey Heer"
+  ],
+  "description": "Web-based Vega authoring environment.",
+  "main": "index.html",
+  "moduleType": [],
+  "license": "BSD-3-Clause",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.6",
+    "d3-cloud": "~1.2.0",
+    "d3-geo-projection": "~0.2.15",
+    "topojson": "~1.6.19",
+    "vega": "latest",
+    "vega-embed": "latest",
+    "ace-builds": "~1.2.0"
+  }
+}

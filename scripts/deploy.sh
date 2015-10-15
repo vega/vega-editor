@@ -1,9 +1,8 @@
 #!/bin/bash
-TARGET=vendor
 STAGE=gh_pages_stage
 
 # Check if all files are commited
-if [ ! -z "$(git status --porcelain)" ]; then 
+if [ ! -z "$(git status --porcelain)" ]; then
   echo "There are uncommitted files. Please commit or stash first!"
   git status
   exit 1
@@ -11,9 +10,9 @@ fi
 
 # Check if gh-pages files are commited
 git checkout gh-pages
-if [ -z "$(git status --porcelain)" ]; then 
+if [ -z "$(git status --porcelain)" ]; then
   echo "All tracked files are commited. Publishing files to github pages."
-else 
+else
   echo "There are uncommitted gh-pages files. Please commit or stash first!"
   git status
   git checkout master
@@ -22,20 +21,14 @@ fi
 git checkout master
 
 # Fresh npm install to ensure no dev changes are included
-# npm install subsequently invoked by npm run vendor
-rm -rf node_modules
-
-# Ensure vendor dependencies
-npm run vendor
-rc=$?; if [[ $rc != 0 ]]; then
-  echo 'Error while ensuring vendor dependencies.'
-  exit 1;
-fi
+# move node modules out of the way so npm link remains
+mv node_modules temp
+npm install
 
 # Populate staging directory
 rm -rf $STAGE
 mkdir $STAGE
-cp -r index.html app vendor $STAGE
+cp -r index.html app node_modules $STAGE
 
 # Copy staged files to gh-pages
 git checkout gh-pages
@@ -44,8 +37,11 @@ rm -rf $STAGE
 
 # Add, commit and push files
 git add -A
+# force node_modules because it is usually ignored
+git add node_modules -f
 git commit -m "Update deployed files."
 git push origin gh-pages
 
 # Restore state
 git checkout master
+mv temp node_modules
