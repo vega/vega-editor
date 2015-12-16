@@ -20,6 +20,12 @@
             "svg"
           ]
         },
+        "mode": {
+          "enum": [
+            "vega",
+            "vega-lite"
+          ]
+        },
         "actions": {
           "oneOf": [
             {
@@ -66,6 +72,12 @@
             "svg"
           ]
         },
+        "mode": {
+          "enum": [
+            "vega",
+            "vega-lite"
+          ]
+        },
         "actions": {
           "oneOf": [
             {
@@ -109,6 +121,12 @@
           "enum": [
             "canvas",
             "svg"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "vega",
+            "vega-lite"
           ]
         },
         "actions": {
