@@ -4,11 +4,11 @@
   "transform": {"filter": "datum.year == 2000"},
   "mark": "bar",
   "encoding": {
-    "x": {
-      "field": "age", "type": "ordinal",
-      "scale": {"bandWidth": 17}
-    },
     "y": {
+      "field": "age", "type": "ordinal",
+      "scale": {"bandSize": 17}
+    },
+    "x": {
       "aggregate": "sum", "field": "people", "type": "quantitative",
       "axis": {"title": "population"}
     }
