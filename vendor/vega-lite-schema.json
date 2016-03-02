@@ -240,8 +240,10 @@
                 "pow",
                 "sqrt",
                 "quantile",
+                "quantize",
                 "ordinal",
-                "time"
+                "time",
+                "utc"
             ]
         },
         "NiceTime": {
@@ -338,7 +340,7 @@
                     "type": "boolean",
                     "description": "If true, ensures that a zero baseline value is included in the scale domain. This option is ignored for non-quantitative scales."
                 },
-                "useRawDomain": {
+                "includeRawDomain": {
                     "type": "boolean",
                     "description": "Uses the source data range as scale domain instead of aggregated data for aggregate axis. This option does not work with sum or count aggregate as they might have a substantially larger scale range."
                 }
@@ -428,6 +430,7 @@
                 "yeardate",
                 "yearmonthdayhours",
                 "yearmonthdayhoursminutes",
+                "yearmonthdayhoursminutesseconds",
                 "hoursminutes",
                 "hoursminutesseconds",
                 "minutesseconds",
@@ -937,10 +940,7 @@
                     "description": "An array of alternating stroke, space lengths for creating dashed or dotted lines."
                 },
                 "strokeDashOffset": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    },
+                    "type": "number",
                     "description": "The offset (in pixels) into which to begin drawing with the stroke dash array."
                 },
                 "stacked": {
@@ -1065,7 +1065,7 @@
                     "type": "number",
                     "description": "Default padding for `x` and `y` ordinal scales."
                 },
-                "useRawDomain": {
+                "includeRawDomain": {
                     "type": "boolean"
                 },
                 "nominalColorRange": {
