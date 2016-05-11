@@ -105,14 +105,13 @@ ved.select = function(spec) {
       mode = ved.currentMode,
       desc = $d3.select('.spec_desc'),
       editor = ved.editor[mode],
-      sel = ved.getSelect(),
-      parse = mode === VEGA ? ved.parseVg : ved.parseVl;
+      sel = ved.getSelect();
 
   if (spec) {
     editor.setValue(spec);
     editor.gotoLine(0);
     desc.html('');
-    parse();
+    ved.parse();
     ved.resizeVlEditor();
     return;
   }
@@ -124,7 +123,7 @@ ved.select = function(spec) {
     d3.xhr(ved.uri(spec), function(error, response) {
       editor.setValue(response.responseText);
       editor.gotoLine(0);
-      parse(function(err) {
+      ved.parse(function(err) {
         if (err) console.error(err);
         desc.html(spec.desc || '');
       });
@@ -169,6 +168,14 @@ ved.format = function() {
     }
   }
 };
+
+ved.parse = function(callback) {
+  if (ved.currentMode === VEGA) {
+    ved.parseVg(callback);
+  } else {
+    ved.parseVl(callback);
+  }
+}
 
 ved.parseVl = function(callback) {
   var spec, source,
