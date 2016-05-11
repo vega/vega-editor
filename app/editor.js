@@ -541,5 +541,14 @@ ved.init = function(el, dir) {
         ved.select();
       }
     }, false);
+
+    // Handle keyboard shortcuts
+    window.addEventListener('keydown', function(evt) {
+      // F5 - Parse
+      if (evt.which == 116) {
+        event.preventDefault();
+        ved.parse();
+      }
+    })
   });
 };
