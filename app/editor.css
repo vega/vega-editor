@@ -199,3 +199,26 @@
 .vega-editor.compassql .hide-cql {
   display: none;
 }
+
+.vislist {
+  overflow: scroll;
+}
+
+.vislist .vislistgroup {
+  padding: 4px;
+}
+
+.vislist .vislistgroup .grouplist {
+  display: flex;
+  margin-top: 2px;
+}
+
+.vislist .vislistitem {
+  padding: 4px;
+  border: 1px dashed #ccc;
+  margin-right: 2px;
+}
+
+.vislist .itemname {
+  font-size: 10px
+}

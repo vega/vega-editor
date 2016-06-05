@@ -300,27 +300,55 @@ ved.cql.init = function(data) {
 };
 
 ved.cql.generate = function(query) {
-  var config = cql.util.extend({verbose: true}, query.config);
-  var answerSet = cql.generate(query.spec, ved.cql.schema, ved.cql.stats, config);
+  var groupedAnswers = cql.query(query, ved.cql.schema, ved.cql.stats);
 
-  var sel = d3.select('.vislist').selectAll('div.vislistitem')
-    .data(answerSet);
-  sel.enter()
-    .append('div')
-    .attr('class', 'vislistitem')
-    .text(function(model) { return model.toShorthand(); })
-    .append('div')
-    .attr('id', function(_, index) { return 'vis-' + index; });
+  console.log('CompassQL', groupedAnswers);
 
-  sel.each(function(model, index) {
-      var spec = model.toSpec();
-      var vgSpec = vl.compile(spec).spec;
-      vg.parse.spec(vgSpec, function(chart) {
-        chart({el: '#vis-' + index}).update();
+  var groups = d3.select('.vislist')
+    .selectAll('.vislistgroup')
+    .data(groupedAnswers);
+
+  var groupEnter = groups.enter()
+    .append('div')
+    .attr('class', 'vislistgroup');
+  groupEnter.append('div')
+    .attr('class', 'groupname');
+  groupEnter.append('div')
+    .attr('class', 'grouplist');
+
+  groups.exit().remove();
+
+  groups.each(function(group, gid) {
+    const groupSel = d3.select(this);
+    groupSel.select('.groupname').text('group: ' + group.name);
+    const sel = groupSel.select('.grouplist').selectAll('div.vislistitem')
+      .data(function(d) { return d.items; });
+
+    const enter = sel.enter()
+      .append('div')
+      .attr('class', 'vislistitem');
+
+    enter.append('div')
+      .attr('class', 'itemname');
+
+    enter.append('div')
+      .attr('id', function(_, index) { return 'vis-' + gid + '-' + index; });
+
+    sel.select('.itemname')
+      .text(function(model) { return model.toShorthand(); })
+
+    sel.each(function(model, index) {
+        var spec = model.toSpec();
+        var vgSpec = vl.compile(spec).spec;
+        vg.parse.spec(vgSpec, function(chart) {
+          chart({el: '#vis-' + gid + '-' + index}).update();
+        });
       });
-    });
 
-  sel.exit().remove();
+    sel.exit().remove();
+  });
+
+
 };
 
 ved.parseCql = function(callback) {
