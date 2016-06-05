@@ -43,7 +43,8 @@
     "vega-datasets": "vega/vega-datasets#gh-pages",
     "vega": "latest",
     "vega-embed": "latest",
-    "vega-lite": "latest"
+    "vega-lite": "latest",
+    "compassql": "latest"
   },
   "devDependencies": {
     "chokidar": "^1.2.0"

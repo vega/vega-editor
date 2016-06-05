@@ -195,3 +195,7 @@
 .vega-editor.vega-lite .hide-vl {
   display: none;
 }
+
+.vega-editor.compassql .hide-cql {
+  display: none;
+}

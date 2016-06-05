@@ -5,6 +5,7 @@ alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
 
 var VEGA = 'vega';
 var VEGA_LITE = 'vega-lite';
+var COMPASSQL = 'compassql';
 
 var ved = {
   version: '1.2.0',
@@ -62,6 +63,8 @@ ved.mode = function() {
     });
 
     ace.attr('class', 'ace_content disabled');
+  } else if (ved.currentMode === COMPASSQL) {
+    // DO NOTHING
   } else {
     throw new Error('Unknown mode ' + ved.currentMode);
   }
@@ -83,6 +86,7 @@ ved.switchToVega = function() {
 
 // Changes visibility of vega editor in vl mode
 ved.editorVisibility = function() {
+  // FIXME
   var $d3 = ved.$d3,
       vgs = $d3.select('.vg-spec'),
       vls = $d3.select('.vl-spec'),
@@ -92,6 +96,8 @@ ved.editorVisibility = function() {
     vgs.style('display', 'none');
     vls.style('flex', '1 1 auto');
     toggle.attr('class', 'click_toggle_vega up');
+  } else if (ved.currentMode === COMPASSQL) {
+    vgs.style('display', 'none');
   } else {
     vgs.style('display', 'block');
     ved.resizeVlEditor();
@@ -106,7 +112,7 @@ ved.select = function(spec) {
       desc = $d3.select('.spec_desc'),
       editor = ved.editor[mode],
       sel = ved.getSelect(),
-      parse = mode === VEGA ? ved.parseVg : ved.parseVl;
+      parse = mode === VEGA ? ved.parseVg : mode === VEGA_LITE ? ved.parseVl : ved.parseCql;
 
   if (spec) {
     editor.setValue(spec);
@@ -140,6 +146,8 @@ ved.select = function(spec) {
     ved.resize();
   } else if (mode === 'vl') {
     ved.resizeVlEditor();
+  } else if (mode === COMPASSQL) {
+    ved.resize();
   }
 };
 
@@ -266,6 +274,109 @@ ved.parseVg = function(callback) {
   });
 };
 
+ved.cql = { // namespace for CompassQL
+  dataUrl: null
+};
+
+/**
+ * Initialize schema and stats for CompassQL
+ */
+ved.cql.init = function(data) {
+  var types = vg.util.type.inferAll(data);
+  var fieldSchemas = vg.util.keys(types).map(function(field) {
+    var primitiveType = types[field];
+    var type = (primitiveType === 'number' || primitiveType === 'integer') ? 'quantitative' :
+      primitiveType === 'date' ? 'temporal' : 'nominal';
+    console.log('schema', field, type, primitiveType);
+
+    return {
+      field: field,
+      type: type,
+      primitiveType: types[field]
+    };
+  });
+  ved.cql.schema = new cql.schema.Schema(fieldSchemas);
+  var summary = vg.util.summary(data);
+  ved.cql.stats = new cql.stats.Stats(summary);
+};
+
+ved.cql.generate = function(query) {
+  var config = cql.util.extend({verbose: true}, query.config);
+  var answerSet = cql.generate(query.spec, ved.cql.schema, ved.cql.stats, config);
+
+  var sel = d3.select('.vislist').selectAll('div.vislistitem')
+    .data(answerSet);
+  sel.enter()
+    .append('div')
+    .attr('class', 'vislistitem')
+    .text(function(model) { return model.toShorthand(); })
+    .append('div')
+    .attr('id', function(_, index) { return 'vis-' + index; });
+
+  sel.each(function(model, index) {
+      var spec = model.toSpec();
+      var vgSpec = vl.compile(spec).spec;
+      vg.parse.spec(vgSpec, function(chart) {
+        chart({el: '#vis-' + index}).update();
+      });
+    });
+
+  sel.exit().remove();
+};
+
+ved.parseCql = function(callback) {
+  if (!callback) {
+    callback = function(err) {
+      if (err) {
+        // FIXME is this the right thing to do for parseCql
+        if (ved.view) ved.view.destroy();
+        console.error(err);
+      }
+    };
+  }
+
+  var query;
+  var value = ved.editor[COMPASSQL].getValue();
+
+  if (!value) {
+    localStorage.removeItem('compassql-spec');
+    return;
+  }
+
+  try {
+    query = JSON.parse(value);
+  } catch (e) {
+    return callback(e);
+  }
+
+  if (ved.getSelect().selectedIndex === 0) {
+    localStorage.setItem('compassql-spec', value);
+  }
+
+  var data = query.spec.data;
+  if (data) {
+    if (data.url) {
+      if (data.url !== ved.cql.dataUrl) {
+        ved.cql.dataUrl = data.url;
+        d3.json('app/' + data.url, function(err, data) {
+          ved.cql.init(data);
+          ved.cql.generate(query);
+        });
+      } else {
+        // no need to recalculate the stats
+        ved.cql.generate(query);
+      }
+    } else if (data.values) {
+      ved.cql.dataUrl = null;
+      ved.cql.init(data);
+      ved.cql.generate(query);
+    }
+  } else {
+    console.error('no data specified');
+    return;
+  }
+};
+
 ved.resetView = function() {
   var $d3 = ved.$d3;
   if (ved.view) ved.view.destroy();
@@ -277,6 +388,7 @@ ved.resetView = function() {
 ved.resize = function(event) {
   ved.editor[VEGA].resize();
   ved.editor[VEGA_LITE].resize();
+  ved.editor[COMPASSQL].resize();
 };
 
 ved.resizeVlEditor = function() {
@@ -397,6 +509,20 @@ ved.init = function(el, dir) {
       .attr('label', function(d) { return d.title; })
       .text(function(d) { return d.name; });
 
+    // CompassQL specification drop-down menu
+    var vlSel = el.select('.sel_compassql_spec');
+    vlSel.on('change', ved.setUrlAfter(ved.select));
+    vlSel.append('option').text('Custom');
+    vlSel.selectAll('optgroup')
+      .data(Object.keys(CQL_SPECS))
+     .enter().append('optgroup')
+      .attr('label', function(key) { return key; })
+     .selectAll('option.spec')
+      .data(function(key) { return CQL_SPECS[key]; })
+     .enter().append('option')
+      .attr('label', function(d) { return d.title; })
+      .text(function(d) { return d.name; });
+
     // Renderer drop-down menu
     var ren = el.select('.sel_render');
     ren.on('change', ved.setUrlAfter(ved.renderer));
@@ -406,15 +532,16 @@ ved.init = function(el, dir) {
       .attr('value', function(d) { return d.toLowerCase(); })
       .text(function(d) { return d; });
 
-    // Vega or Vega-lite mode
+    // Vega, Vega-lite, or CompassQL mode
     var mode = el.select('.sel_mode');
     mode.on('change', ved.setUrlAfter(ved.mode));
 
     // Code Editors
     var vlEditor = ved.editor[VEGA_LITE] = ace.edit(el.select('.vl-spec').node());
     var vgEditor = ved.editor[VEGA] = ace.edit(el.select('.vg-spec').node());
+    var cqlEditor = ved.editor[COMPASSQL] = ace.edit(el.select('.cql-spec').node());
 
-    [vlEditor, vgEditor].forEach(function(editor) {
+    [vlEditor, vgEditor, cqlEditor].forEach(function(editor) {
       editor.getSession().setMode('ace/mode/json');
       editor.getSession().setTabSize(2);
       editor.getSession().setUseSoftTabs(true);
@@ -444,6 +571,7 @@ ved.init = function(el, dir) {
     el.select('.btn_spec_format').on('click', ved.format);
     el.select('.btn_vg_parse').on('click', ved.setUrlAfter(ved.parseVg));
     el.select('.btn_vl_parse').on('click', ved.setUrlAfter(ved.parseVl));
+    el.select('.btn_cql_parse').on('click', ved.setUrlAfter(ved.parseCql));
     el.select('.btn_to_vega').on('click', ved.setUrlAfter(function() {
       d3.event.preventDefault();
       ved.switchToVega();
@@ -465,6 +593,7 @@ ved.init = function(el, dir) {
     ved.specs = {};
     ved.specs[VEGA] = getIndexes(VG_SPECS);
     ved.specs[VEGA_LITE] = getIndexes(VL_SPECS);
+    ved.specs[COMPASSQL] = getIndexes(CQL_SPECS);
 
     // Handle application parameters
     var p = ved.params();
@@ -474,7 +603,8 @@ ved.init = function(el, dir) {
     }
 
     if (p.mode) {
-      mode.node().selectedIndex = p.mode.toLowerCase() === VEGA_LITE ? 1 : 0;
+      mode.node().selectedIndex = p.mode.toLowerCase() === COMPASSQL ? 2 :
+        p.mode.toLowerCase() === VEGA_LITE ? 1 : 0;
     }
     ved.mode();
 

@@ -10,6 +10,7 @@ VEGA_OP="cp -R"
 VEGA_DATASETS_OP="cp -R"
 VEGA_EMBED_OP="cp -R"
 VEGA_LITE_OP="cp -R"
+COMPASSQL_OP="cp -R"
 
 while getopts :l: FLAG; do
   case $FLAG in
@@ -41,6 +42,7 @@ cp lib/json3-compactstringify.js $TARGET
 eval $VEGA_OP "$CWD/node_modules/vega/vega*" $TARGET
 eval $VEGA_EMBED_OP "$CWD/node_modules/vega-embed/vega-embed*" $TARGET
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/vega-lite*" $TARGET
+eval $COMPASSQL_OP "$CWD/node_modules/compassql/compassql*" $TARGET
 
 if [ ! -d "$TARGET/ace" ]; then
   mkdir $TARGET/ace
@@ -67,3 +69,5 @@ fi
 eval $VEGA_OP "$CWD/node_modules/vega/examples" "$SPEC/vega"
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/examples/specs" "$SPEC/vega-lite"
 echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/examples/vl-examples.json` > app/vl-specs.js
+eval $COMPASSQL_OP "$CWD/node_modules/compassql/examples/specs" "$SPEC/compassql"
+echo "var CQL_SPECS = "`cat $CWD/node_modules/compassql/examples/cql-examples.json` > app/cql-specs.js

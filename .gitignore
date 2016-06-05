@@ -4,6 +4,7 @@ _site
 app/data
 app/spec
 app/vl-specs.js
+app/cql-specs.js
 coverage
 node_modules
 temp
