@@ -250,7 +250,7 @@ ved.parseVg = function(callback) {
   }
 
   if (ved.getSelect().selectedIndex === 0 && ved.currentMode === VEGA) {
-    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method. 
+    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method.
     localStorage.setItem('vega-spec', value);
   }
 
@@ -340,10 +340,14 @@ ved.cql.generate = function(query) {
 
     sel.each(function(model, index) {
         var spec = model.toSpec();
-        var vgSpec = vl.compile(spec).spec;
-        vg.parse.spec(vgSpec, function(chart) {
-          chart({el: '#vis-' + gid + '-' + index}).update();
-        });
+        var id = '#vis-' + gid + '-' + index;
+        var opt = {
+          spec: spec,
+          renderer: ved.renderType,
+          mode: 'vega-lite',
+          actions: {export: false}
+        };
+        vg.embed(id, opt);
       });
 
     sel.exit().remove();

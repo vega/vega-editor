@@ -222,3 +222,12 @@
 .vislist .itemname {
   font-size: 10px
 }
+
+.vislist .vega-actions {
+  text-align: center;
+}
+
+.vislist .vega-actions a{
+  font-size: 10px;
+  margin-right: 4px;
+}
