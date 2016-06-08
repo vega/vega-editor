@@ -202,10 +202,18 @@
 
 .vislist {
   overflow: scroll;
+  background: #ddd;
 }
 
 .vislist .vislistgroup {
-  padding: 4px;
+  margin: 2px;
+  padding: 2px;
+  background-color: rgba(255,255,255,0.5);
+}
+
+.vislist .vislistgroup .groupexpander {
+  color: steelblue;
+  cursor: pointer;
 }
 
 .vislist .vislistgroup .grouplist {
@@ -215,6 +223,7 @@
 
 .vislist .vislistitem {
   padding: 4px;
+  background-color: white;
   border: 1px dashed #ccc;
   margin-right: 2px;
 }

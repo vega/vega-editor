@@ -300,60 +300,111 @@ ved.cql.init = function(data) {
   ved.cql.stats = new cql.stats.Stats(summary);
 };
 
-ved.cql.generate = function(query) {
-  var groupedAnswers = cql.query(query, ved.cql.schema, ved.cql.stats);
-
-  console.log('CompassQL', groupedAnswers);
-
-  var groups = d3.select('.vislist')
-    .selectAll('.vislistgroup')
-    .data(groupedAnswers);
-
+ved.cql.renderGroups = function(groups, indexPrefix) {
   var groupEnter = groups.enter()
     .append('div')
     .attr('class', 'vislistgroup');
-  groupEnter.append('div')
+
+  var headerEnter = groupEnter.append('span')
+    .attr('class', 'groupheader');
+
+  headerEnter.append('span')
     .attr('class', 'groupname');
+
+  headerEnter.append('span')
+    .attr('class', 'groupexpander')
+    .text(function(d) {
+      return d.items.length <= 1 ? '' : d.expand ? ' [-] ' : ' [+] ';
+    })
+    .on('click', function(group, gid) {
+      group.expand = !group.expand;
+      var groupElem = this.parentNode  // .groupheader
+                          .parentNode; // .vislistgroup
+
+      ved.cql.groupRenderer(indexPrefix).call(groupElem, group, gid);
+
+      d3.select(groupElem).select('.groupexpander').text(
+        group.items.length <= 1 ? '' :group.expand ? ' [-] ' : ' [+] '
+      );
+    });
+
   groupEnter.append('div')
     .attr('class', 'grouplist');
 
   groups.exit().remove();
 
-  groups.each(function(group, gid) {
+  groups.each(ved.cql.groupRenderer(indexPrefix));
+};
+
+ved.cql.groupRenderer = function(indexPrefix) {
+  return function(group, gid) {
     const groupSel = d3.select(this);
     groupSel.select('.groupname').text('group: ' + group.name);
-    const sel = groupSel.select('.grouplist').selectAll('div.vislistitem')
-      .data(function(d) { return d.items; });
 
-    const enter = sel.enter()
+    const sel = groupSel.select('.grouplist')
+      // select all children of .grouplist
+      .selectAll(function() { return this.childNodes; })
+      .data(
+        // if not expand, only show the top item
+        group.expand ? group.items : [group.items[0]],
+        function (item) {
+          return item.name || // group
+            JSON.stringify(item.toSpec());    // model
+        }
+      );
+
+    // render child item based on type
+    if (group.items[0].items) { // SpecQueryModelGroup
+      ved.cql.renderGroups(sel, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    } else { // SpecQueryModel
+      ved.cql.renderItems(sel, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    }
+  };
+};
+
+ved.cql.renderItems = function(sel, indexPrefix) {
+  const enter = sel.enter()
       .append('div')
       .attr('class', 'vislistitem');
 
-    enter.append('div')
-      .attr('class', 'itemname');
+  enter.append('div')
+    .attr('id', function(_, index) { return 'vis-' + indexPrefix + '-' + index; });
 
-    enter.append('div')
-      .attr('id', function(_, index) { return 'vis-' + gid + '-' + index; });
+  enter.append('div')
+    .attr('class', 'itemname')
+    .text(function(d) {
+      return d.toShorthand();
+    })
+    .each(function(model, index) {
+      var spec = model.toSpec();
+      var id = '#vis-' + indexPrefix + '-' + index;
+      var opt = {
+        spec: spec,
+        renderer: ved.renderType,
+        mode: 'vega-lite',
+        actions: {export: false}
+      };
+      vg.embed(id, opt);
+    });
 
-    sel.select('.itemname')
-      .text(function(model) { return model.toShorthand(); })
+  sel.exit().remove();
+};
 
-    sel.each(function(model, index) {
-        var spec = model.toSpec();
-        var id = '#vis-' + gid + '-' + index;
-        var opt = {
-          spec: spec,
-          renderer: ved.renderType,
-          mode: 'vega-lite',
-          actions: {export: false}
-        };
-        vg.embed(id, opt);
-      });
+ved.cql.generate = function(query) {
+  var groupedAnswers = cql.query(query, ved.cql.schema, ved.cql.stats);
 
-    sel.exit().remove();
+  console.log('CompassQL', groupedAnswers);
+
+  groupedAnswers.forEach(function(answer) {
+    answer.expand = true;
   });
 
+  var groups = d3.select('.vislist')
+    // select all children of .vislist
+    .selectAll(function() { return this.childNodes; })
+    .data(groupedAnswers);
 
+  ved.cql.renderGroups(groups, '');
 };
 
 ved.parseCql = function(callback) {
