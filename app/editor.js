@@ -314,13 +314,23 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   var groupsEnter = groupSelections.enter()
     .append('div')
-    .attr('class', 'vislistgroup');
+    .attr('class', 'vislistgroup')
+    .classed('collapsed', function(childGrp) {
+      return !childGrp.expand;
+    });
 
   var headersEnter = groupsEnter.append('span')
     .attr('class', 'groupheader');
 
   headersEnter.append('span')
-    .attr('class', 'groupname');
+    .attr('class', 'grouptype')
+    .text(group.groupBy +': ');
+
+  headersEnter.append('span')
+    .attr('class', 'groupname')
+    .text(function(childGrp) {
+      return childGrp.name;
+    });
 
   headersEnter.append('span')
     .attr('class', 'groupexpander')
@@ -332,11 +342,12 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
       var groupElem = this.parentNode  // .groupheader
                           .parentNode; // .vislistgroup
 
-      ved.cql.groupRenderer(indexPrefix, group.groupBy).call(groupElem, childGrp, gid);
+      ved.cql.groupRenderer(indexPrefix).call(groupElem, childGrp, gid);
 
       d3.select(groupElem).select('.groupexpander').text(
         childGrp.items.length <= 1 ? '' :childGrp.expand ? ' [-] ' : ' [+] '
       );
+      d3.select(groupElem).classed('collapsed', !childGrp.expand);
     });
 
   groupsEnter.append('div')
@@ -344,15 +355,12 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.exit().remove();
 
-  groupSelections.each(ved.cql.groupRenderer(indexPrefix, group.groupBy));
+  groupSelections.each(ved.cql.groupRenderer(indexPrefix));
 };
 
 ved.cql.groupRenderer = function(indexPrefix, groupBy) {
   return function(group, gid) {
-    const groupSel = d3.select(this);
-    groupSel.select('.groupname').text(groupBy + ': ' + group.name);
-
-    const sel = groupSel.select('.grouplist');
+    const sel = d3.select(this).select('.grouplist');
 
     // render child item based on type
     if (group.items[0].items) { // SpecQueryModelGroup

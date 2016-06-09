@@ -216,6 +216,10 @@
   overflow-x: scroll;
 }
 
+.vislist .vislistgroup.collapsed .groupheader .groupname{
+  display: none;
+}
+
 .vislist .vislistgroup .groupexpander {
   color: steelblue;
   cursor: pointer;
