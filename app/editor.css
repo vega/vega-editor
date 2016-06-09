@@ -211,6 +211,11 @@
   background-color: rgba(255,255,255,0.5);
 }
 
+/* only the top-level vislistgroup gets the scroll */
+.vislist > .vislistgroup {
+  overflow-x: scroll;
+}
+
 .vislist .vislistgroup .groupexpander {
   color: steelblue;
   cursor: pointer;

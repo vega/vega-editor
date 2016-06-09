@@ -300,50 +300,71 @@ ved.cql.init = function(data) {
   ved.cql.stats = new cql.stats.Stats(summary);
 };
 
-ved.cql.renderGroups = function(groups, indexPrefix) {
-  var groupEnter = groups.enter()
+ved.cql.renderGroups = function(sel, group, indexPrefix) {
+  // select all children of sel
+  var groupSelections = sel.selectAll(function() { return this.childNodes; })
+    .data(
+      // if not expand, only show the top item
+      group.expand ? group.items : [group.items[0]],
+      function (item) {
+        return item.name || // group
+          JSON.stringify(item.toSpec());    // model
+      }
+    );
+
+  var groupsEnter = groupSelections.enter()
     .append('div')
     .attr('class', 'vislistgroup');
 
-  var headerEnter = groupEnter.append('span')
+  var headersEnter = groupsEnter.append('span')
     .attr('class', 'groupheader');
 
-  headerEnter.append('span')
+  headersEnter.append('span')
     .attr('class', 'groupname');
 
-  headerEnter.append('span')
+  headersEnter.append('span')
     .attr('class', 'groupexpander')
-    .text(function(d) {
-      return d.items.length <= 1 ? '' : d.expand ? ' [-] ' : ' [+] ';
+    .text(function(childGrp) {
+      return childGrp.items.length <= 1 ? '' : childGrp.expand ? ' [-] ' : ' [+] ';
     })
-    .on('click', function(group, gid) {
-      group.expand = !group.expand;
+    .on('click', function(childGrp, gid) {
+      childGrp.expand = !childGrp.expand;
       var groupElem = this.parentNode  // .groupheader
                           .parentNode; // .vislistgroup
 
-      ved.cql.groupRenderer(indexPrefix).call(groupElem, group, gid);
+      ved.cql.groupRenderer(indexPrefix, group.groupBy).call(groupElem, childGrp, gid);
 
       d3.select(groupElem).select('.groupexpander').text(
-        group.items.length <= 1 ? '' :group.expand ? ' [-] ' : ' [+] '
+        childGrp.items.length <= 1 ? '' :childGrp.expand ? ' [-] ' : ' [+] '
       );
     });
 
-  groupEnter.append('div')
+  groupsEnter.append('div')
     .attr('class', 'grouplist');
 
-  groups.exit().remove();
+  groupSelections.exit().remove();
 
-  groups.each(ved.cql.groupRenderer(indexPrefix));
+  groupSelections.each(ved.cql.groupRenderer(indexPrefix, group.groupBy));
 };
 
-ved.cql.groupRenderer = function(indexPrefix) {
+ved.cql.groupRenderer = function(indexPrefix, groupBy) {
   return function(group, gid) {
     const groupSel = d3.select(this);
-    groupSel.select('.groupname').text('group: ' + group.name);
+    groupSel.select('.groupname').text(groupBy + ': ' + group.name);
 
-    const sel = groupSel.select('.grouplist')
-      // select all children of .grouplist
-      .selectAll(function() { return this.childNodes; })
+    const sel = groupSel.select('.grouplist');
+
+    // render child item based on type
+    if (group.items[0].items) { // SpecQueryModelGroup
+      ved.cql.renderGroups(sel, group, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    } else { // SpecQueryModel
+      ved.cql.renderItems(sel, group, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    }
+  };
+};
+
+ved.cql.renderItems = function(sel, group, indexPrefix) {
+  var selections = sel.selectAll(function() { return this.childNodes; })
       .data(
         // if not expand, only show the top item
         group.expand ? group.items : [group.items[0]],
@@ -352,29 +373,18 @@ ved.cql.groupRenderer = function(indexPrefix) {
             JSON.stringify(item.toSpec());    // model
         }
       );
-
-    // render child item based on type
-    if (group.items[0].items) { // SpecQueryModelGroup
-      ved.cql.renderGroups(sel, (indexPrefix ? indexPrefix + '-' : '') + gid);
-    } else { // SpecQueryModel
-      ved.cql.renderItems(sel, (indexPrefix ? indexPrefix + '-' : '') + gid);
-    }
-  };
-};
-
-ved.cql.renderItems = function(sel, indexPrefix) {
-  const enter = sel.enter()
+  const enter = selections.enter()
       .append('div')
       .attr('class', 'vislistitem');
-
-  enter.append('div')
-    .attr('id', function(_, index) { return 'vis-' + indexPrefix + '-' + index; });
 
   enter.append('div')
     .attr('class', 'itemname')
     .text(function(d) {
       return d.toShorthand();
-    })
+    });
+
+  enter.append('div')
+    .attr('id', function(_, index) { return 'vis-' + indexPrefix + '-' + index; })
     .each(function(model, index) {
       var spec = model.toSpec();
       var id = '#vis-' + indexPrefix + '-' + index;
@@ -387,24 +397,21 @@ ved.cql.renderItems = function(sel, indexPrefix) {
       vg.embed(id, opt);
     });
 
-  sel.exit().remove();
+  selections.exit().remove();
 };
 
 ved.cql.generate = function(query) {
-  var groupedAnswers = cql.query(query, ved.cql.schema, ved.cql.stats);
+  var rootGroup = cql.query(query, ved.cql.schema, ved.cql.stats);
 
-  console.log('CompassQL', groupedAnswers);
+  console.log('CompassQL', rootGroup.items);
 
-  groupedAnswers.forEach(function(answer) {
+  rootGroup.expand = true;
+  rootGroup.items.forEach(function(answer) {
     answer.expand = true;
   });
 
-  var groups = d3.select('.vislist')
-    // select all children of .vislist
-    .selectAll(function() { return this.childNodes; })
-    .data(groupedAnswers);
-
-  ved.cql.renderGroups(groups, '');
+  var sel = d3.select('.vislist');
+  ved.cql.renderGroups(sel, rootGroup, '');
 };
 
 ved.parseCql = function(callback) {
