@@ -320,7 +320,19 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
     });
 
   var headersEnter = groupsEnter.append('span')
-    .attr('class', 'groupheader');
+    .attr('class', 'groupheader')
+    .attr('title', function(childGrp) {
+      var topItem = cql.nest.getTopItem(childGrp);
+      var orderGroupBy = group.orderGroupBy;
+      if (orderGroupBy) {
+        var score = topItem.getRankingScore(orderGroupBy)
+        return orderGroupBy + '=' + score.score + '\n\n' +
+          score.features.map(function(feature) {
+            return feature.score + ' : ' +feature.type + '.' + feature.feature;
+          }).join(',\n');
+      }
+      return null;
+    });
 
   headersEnter.append('span')
     .attr('class', 'grouptype')
