@@ -430,8 +430,8 @@ ved.cql.generate = function(query) {
     answer.expand = true;
   });
 
-  var sel = d3.select('.vislist');
-  ved.cql.renderGroups(sel, rootGroup, '');
+  d3.select('.vislist').datum(rootGroup)
+    .each(ved.cql.groupRenderer(''));
 };
 
 ved.parseCql = function(callback) {
