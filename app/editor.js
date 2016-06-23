@@ -370,7 +370,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
   groupSelections.each(ved.cql.groupRenderer(indexPrefix));
 };
 
-ved.cql.groupRenderer = function(indexPrefix, groupBy) {
+ved.cql.groupRenderer = function(indexPrefix) {
   return function(group, gid) {
     const sel = d3.select(this).select('.grouplist');
 
