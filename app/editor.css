@@ -241,6 +241,11 @@
   overflow-y: scroll;
 }
 
+.vislist .querytime {
+  padding: 4px;
+  background-color: white;
+}
+
 .vislist .itemname {
   font-size: 10px
 }
