@@ -434,7 +434,7 @@ ved.cql.generate = function(query) {
   var startTime = Date.now();
   var rootGroup = cql.query(query, ved.cql.schema, ved.cql.stats);
   var endTime = Date.now();
-  d3.select('.querytime').text('Query time: ' + (endTime - startTime) + ' milliseconds');
+  console.log('Query time:', (endTime - startTime), 'milliseconds');
 
   ved.cql.query = query; // storing for later reference
   console.log('CompassQL', rootGroup.items);
