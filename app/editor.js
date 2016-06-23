@@ -275,7 +275,8 @@ ved.parseVg = function(callback) {
 };
 
 ved.cql = { // namespace for CompassQL
-  dataUrl: null
+  dataUrl: null,
+  query: null
 };
 
 /**
@@ -299,6 +300,13 @@ ved.cql.init = function(data) {
   var summary = vg.util.summary(data);
   ved.cql.stats = new cql.stats.Stats(summary);
 };
+
+function getRankingSummaryText(orderBy, score) {
+  return orderBy + '=' + score.score + '\n\n' +
+    score.features.map(function(feature) {
+      return feature.score + ' : ' +feature.type + '.' + feature.feature;
+    }).join(',\n');
+}
 
 ved.cql.renderGroups = function(sel, group, indexPrefix) {
   // select all children of sel
@@ -326,10 +334,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         var score = topItem.getRankingScore(orderGroupBy)
-        return orderGroupBy + '=' + score.score + '\n\n' +
-          score.features.map(function(feature) {
-            return feature.score + ' : ' +feature.type + '.' + feature.feature;
-          }).join(',\n');
+        return getRankingSummaryText(orderGroupBy, score);
       }
       return null;
     });
@@ -401,6 +406,11 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
     .attr('class', 'itemname')
     .text(function(d) {
       return d.toShorthand();
+    })
+    .attr('title', function(d) {
+      var orderBy = ved.cql.query.orderBy;
+
+      return getRankingSummaryText(orderBy, d.getRankingScore(orderBy));
     });
 
   enter.append('div')
@@ -423,6 +433,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
 ved.cql.generate = function(query) {
   var rootGroup = cql.query(query, ved.cql.schema, ved.cql.stats);
 
+  ved.cql.query = query; // storing for later reference
   console.log('CompassQL', rootGroup.items);
 
   rootGroup.expand = true;
