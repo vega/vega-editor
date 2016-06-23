@@ -235,6 +235,10 @@
   background-color: white;
   border: 1px dashed #ccc;
   margin-right: 2px;
+  max-width: 500px;
+  max-height: 400px;
+  overflow-x: scroll;
+  overflow-y: scroll;
 }
 
 .vislist .itemname {
