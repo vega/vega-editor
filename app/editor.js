@@ -302,6 +302,9 @@ ved.cql.init = function(data) {
 };
 
 function getRankingSummaryText(orderBy, score) {
+  if (!score) {
+    return null;
+  }
   return orderBy + '=' + score.score + '\n\n' +
     score.features.map(function(feature) {
       return feature.score + ' : ' +feature.type + '.' + feature.feature;
@@ -378,6 +381,10 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 ved.cql.groupRenderer = function(indexPrefix) {
   return function(group, gid) {
     const sel = d3.select(this).select('.grouplist');
+
+    if (!group || group.items.length === 0) {
+      return;
+    }
 
     // render child item based on type
     if (group.items[0].items) { // SpecQueryModelGroup
