@@ -228,6 +228,7 @@
 .vislist .vislistgroup .grouplist {
   display: flex;
   margin-top: 2px;
+  overflow-x: scroll;
 }
 
 .vislist .vislistitem {
@@ -235,7 +236,8 @@
   background-color: white;
   border: 1px dashed #ccc;
   margin-right: 2px;
-  max-width: 500px;
+  max-width: 600px;
+  min-width: 250px;
   max-height: 400px;
   overflow-x: scroll;
   overflow-y: scroll;
