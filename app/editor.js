@@ -325,13 +325,16 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   var groupsEnter = groupSelections.enter()
     .append('div')
-    .attr('class', 'vislistgroup')
-    .classed('collapsed', function(childGrp) {
+    .attr('class', 'vislistgroup');
+
+  groupSelections.classed('collapsed', function(childGrp) {
       return !childGrp.expand;
     });
 
   var headersEnter = groupsEnter.append('span')
     .attr('class', 'groupheader')
+
+  groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
       var topItem = cql.nest.getTopItem(childGrp);
       var orderGroupBy = group.orderGroupBy;
@@ -343,17 +346,23 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
     });
 
   headersEnter.append('span')
-    .attr('class', 'grouptype')
+    .attr('class', 'grouptype');
+
+  groupSelections.select('span.grouptype')
     .text(group.groupBy +': ');
 
   headersEnter.append('span')
-    .attr('class', 'groupname')
+    .attr('class', 'groupname');
+
+  groupSelections.select('span.groupname')
     .text(function(childGrp) {
       return childGrp.name;
     });
 
   headersEnter.append('span')
     .attr('class', 'groupexpander')
+
+  groupSelections.select('span.groupexpander')
     .text(function(childGrp) {
       return childGrp.items.length <= 1 ? '' : childGrp.expand ? ' [-] ' : ' [+] ';
     })
@@ -413,7 +422,11 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
     .attr('class', 'itemname')
     .text(function(d) {
       return d.toShorthand();
-    })
+    });
+
+  // set title to score (need to reset every time
+  // since the same spec might have different score)
+  selections.select('div.itemname')
     .attr('title', function(d) {
       var orderBy = ved.cql.query.orderBy;
 
