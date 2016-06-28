@@ -276,7 +276,8 @@ ved.parseVg = function(callback) {
 
 ved.cql = { // namespace for CompassQL
   dataUrl: null,
-  query: null
+  query: null,
+  NUM_EXPAND: 2
 };
 
 /**
@@ -460,8 +461,8 @@ ved.cql.generate = function(query) {
   console.log('CompassQL', rootGroup.items);
 
   rootGroup.expand = true;
-  rootGroup.items.forEach(function(answer) {
-    answer.expand = true;
+  rootGroup.items.forEach(function(answer, index) {
+    answer.expand = index < ved.cql.NUM_EXPAND;
   });
 
   d3.select('.vislist').datum(rootGroup)
