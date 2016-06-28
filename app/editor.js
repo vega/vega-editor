@@ -390,7 +390,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
 ved.cql.groupRenderer = function(indexPrefix) {
   return function(group, gid) {
-    const sel = d3.select(this).select('.grouplist');
+    var sel = d3.select(this).select('.grouplist');
 
     if (!group || group.items.length === 0) {
       return;
@@ -415,7 +415,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
             JSON.stringify(item.toSpec());    // model
         }
       );
-  const enter = selections.enter()
+  var enter = selections.enter()
       .append('div')
       .attr('class', 'vislistitem');
 
