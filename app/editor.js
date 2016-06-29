@@ -277,7 +277,8 @@ ved.parseVg = function(callback) {
 ved.cql = { // namespace for CompassQL
   dataUrl: null,
   query: null,
-  NUM_EXPAND: 2
+  NUM_EXPAND: 2,
+  views: null
 };
 
 /**
@@ -300,6 +301,7 @@ ved.cql.init = function(data) {
   ved.cql.schema = new cql.schema.Schema(fieldSchemas);
   var summary = vg.util.summary(data);
   ved.cql.stats = new cql.stats.Stats(summary);
+  ved.cql.views = new d3.map();
 };
 
 function getRankingSummaryText(orderBy, score) {
@@ -445,7 +447,20 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
         mode: 'vega-lite',
         actions: {export: false}
       };
-      vg.embed(id, opt);
+      vg.embed(id, opt, function(err, result) {
+        if(err) {
+          console.error("[CompassQL]", err);
+          return;
+        }
+
+        // unregister signals for unused views
+        if (ved.cql.views.get(id)) {
+          ved.cql.views.get(id).destroy();
+        }
+
+        // store current view
+        ved.cql.views.set(id, result.view);
+      });
     });
 
   selections.exit().remove();
