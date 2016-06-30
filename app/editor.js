@@ -278,7 +278,7 @@ ved.cql = { // namespace for CompassQL
   dataUrl: null,
   query: null,
   NUM_EXPAND: 2,
-  views: null
+  views: {}
 };
 
 /**
@@ -301,7 +301,6 @@ ved.cql.init = function(data) {
   ved.cql.schema = new cql.schema.Schema(fieldSchemas);
   var summary = vg.util.summary(data);
   ved.cql.stats = new cql.stats.Stats(summary);
-  ved.cql.views = new d3.map();
 };
 
 function getRankingSummaryText(orderBy, score) {
@@ -314,6 +313,34 @@ function getRankingSummaryText(orderBy, score) {
     }).join(',\n');
 }
 
+/**  
+* Recursively detach event listeners for all views in a group
+* So the event signals can be garbage-collected when a group exits
+*/
+function detachViewsInGroup(root) {
+  if (cql.nest.isSpecQueryModelGroup(root)) { // it's a group
+    root.items.forEach(function(item) {
+      detachViewsInGroup(item);
+    });
+  }
+  else { // it's a SpecQueryModel
+    detachView(root);
+  }
+}
+
+/**
+ * Detach event listeners for a single SpecQueryModel
+ * So the event signals can be garbage-collected when an item exits
+ */
+function detachView(model) {
+  var key = JSON.stringify(model.toSpec()); 
+    if (ved.cql.views[key]) {
+      ved.cql.views[key].destroy();
+      delete ved.cql.views[key];
+    }
+}
+
+
 ved.cql.renderGroups = function(sel, group, indexPrefix) {
   // select all children of sel
   var groupSelections = sel.selectAll(function() { return this.childNodes; })
@@ -325,6 +352,13 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
           JSON.stringify(item.toSpec());    // model
       }
     );
+
+  // unregister event listeners for exiting groups
+  groupSelections.exit().each(function(group) {
+    detachViewsInGroup(group);
+  });
+
+  groupSelections.exit().remove();
 
   var groupsEnter = groupSelections.enter()
     .append('div')
@@ -385,7 +419,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
   groupsEnter.append('div')
     .attr('class', 'grouplist');
 
-  groupSelections.exit().remove();
+  
 
   groupSelections.each(ved.cql.groupRenderer(indexPrefix));
 };
@@ -417,6 +451,14 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
             JSON.stringify(item.toSpec());    // model
         }
       );
+
+  // unregister signals for exiting views
+  selections.exit().each(function(model) {
+    detachView(model);
+  });
+
+  selections.exit().remove();
+
   var enter = selections.enter()
       .append('div')
       .attr('class', 'vislistitem');
@@ -453,17 +495,13 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
           return;
         }
 
-        // unregister signals for unused views
-        if (ved.cql.views.get(id)) {
-          ved.cql.views.get(id).destroy();
-        }
-
         // store current view
-        ved.cql.views.set(id, result.view);
+        var key = JSON.stringify(spec);
+        ved.cql.views[key] = result.view;
       });
     });
-
-  selections.exit().remove();
+  
+  
 };
 
 ved.cql.generate = function(query) {
