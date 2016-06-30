@@ -317,14 +317,14 @@ function getRankingSummaryText(orderBy, score) {
 * Recursively detach event listeners for all views in a group
 * So the event signals can be garbage-collected when a group exits
 */
-function detachViewsInGroup(root) {
-  if (cql.nest.isSpecQueryModelGroup(root)) { // it's a group
-    root.items.forEach(function(item) {
-      detachViewsInGroup(item);
+function detachViewsInGroup(item) {
+  if (cql.nest.isSpecQueryModelGroup(item)) { // it's a group
+    item.items.forEach(function(childItem) {
+      detachViewsInGroup(childItem);
     });
   }
   else { // it's a SpecQueryModel
-    detachView(root);
+    detachView(item);
   }
 }
 
