@@ -298,12 +298,12 @@ function getRankingSummaryText(orderBy, score) {
     }).join(',\n');
 }
 
-/**  
+/**
 * Recursively detach event listeners for all views in a group
 * So the event signals can be garbage-collected when a group exits
 */
 function detachViewsInGroup(item) {
-  if (cql.nest.isSpecQueryModelGroup(item)) { // it's a group
+  if (cql.modelgroup.isSpecQueryModelGroup(item)) { // it's a group
     item.items.forEach(function(childItem) {
       detachViewsInGroup(childItem);
     });
@@ -318,7 +318,7 @@ function detachViewsInGroup(item) {
  * So the event signals can be garbage-collected when an item exits
  */
 function detachView(model) {
-  var key = JSON.stringify(model.toSpec()); 
+  var key = JSON.stringify(model.toSpec());
     if (ved.cql.views[key]) {
       ved.cql.views[key].destroy();
       delete ved.cql.views[key];
@@ -358,7 +358,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
-      var topItem = cql.nest.getTopItem(childGrp);
+      var topItem = cql.modelgroup.getTopItem(childGrp);
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         var score = topItem.getRankingScore(orderGroupBy)
@@ -404,7 +404,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
   groupsEnter.append('div')
     .attr('class', 'grouplist');
 
-  
+
 
   groupSelections.each(ved.cql.groupRenderer(indexPrefix));
 };
@@ -485,8 +485,8 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
         ved.cql.views[key] = result.view;
       });
     });
-  
-  
+
+
 };
 
 ved.cql.generate = function(query) {
