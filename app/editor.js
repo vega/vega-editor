@@ -285,7 +285,7 @@ ved.cql = { // namespace for CompassQL
  * Initialize schema and stats for CompassQL
  */
 ved.cql.init = function(data) {
-  ved.cql.schema = new cql.schema.Schema(data);
+  ved.cql.schema = new cql.schema.Schema.build(data);
 };
 
 function getRankingSummaryText(orderBy, score) {
