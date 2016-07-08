@@ -285,22 +285,7 @@ ved.cql = { // namespace for CompassQL
  * Initialize schema and stats for CompassQL
  */
 ved.cql.init = function(data) {
-  var types = vg.util.type.inferAll(data);
-  var fieldSchemas = vg.util.keys(types).map(function(field) {
-    var primitiveType = types[field];
-    var type = (primitiveType === 'number' || primitiveType === 'integer') ? 'quantitative' :
-      primitiveType === 'date' ? 'temporal' : 'nominal';
-    console.log('schema', field, type, primitiveType);
-
-    return {
-      field: field,
-      type: type,
-      primitiveType: types[field]
-    };
-  });
-  ved.cql.schema = new cql.schema.Schema(fieldSchemas);
-  var summary = vg.util.summary(data);
-  ved.cql.stats = new cql.stats.Stats(summary);
+  ved.cql.schema = cql.schema.Schema.build(data);
 };
 
 function getRankingSummaryText(orderBy, score) {
@@ -506,7 +491,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
 
 ved.cql.generate = function(query) {
   var startTime = Date.now();
-  var rootGroup = cql.query(query, ved.cql.schema, ved.cql.stats);
+  var rootGroup = cql.query(query, ved.cql.schema);
   var endTime = Date.now();
   console.log('Query time:', (endTime - startTime), 'milliseconds');
 
