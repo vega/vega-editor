@@ -87,8 +87,7 @@
               "y": {"scale": "y", "field": "variety"},
               "size": {"value": 50},
               "stroke": {"scale": "c", "field": "year"},
-              "strokeWidth": {"value": 2},
-              "fill": {"value": "transparent"}
+              "strokeWidth": {"value": 2}
             }
           }
         }

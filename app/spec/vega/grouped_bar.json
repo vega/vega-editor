@@ -40,7 +40,7 @@
       "name": "color",
       "type": "ordinal",
       "domain": {"data": "table", "field": "position"},
-      "range": "category10"
+      "range": "category20"
     }
   ],
   "axes": [
