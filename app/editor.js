@@ -1,6 +1,6 @@
 'use strict';
 
-/*global location, window, d3, vl, vg, localStorage, document,
+/*global location, window, d3, vl, vg, cql, localStorage, document,
 alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
 
 var VEGA = 'vega';
@@ -371,7 +371,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
     .attr('class', 'grouptype');
 
   groupSelections.select('span.grouptype')
-    .text(group.groupBy +': ');
+    .text(cql.query.groupBy.toString(group.groupBy) +': ');
 
   headersEnter.append('span')
     .attr('class', 'groupname');
