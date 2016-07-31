@@ -1,6 +1,6 @@
 'use strict';
 
-/*global location, window, d3, vl, vg, localStorage, document,
+/*global location, window, d3, vl, vg, cql, localStorage, document,
 alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
 
 var VEGA = 'vega';
@@ -303,7 +303,7 @@ function getRankingSummaryText(orderBy, score) {
 * So the event signals can be garbage-collected when a group exits
 */
 function detachViewsInGroup(item) {
-  if (cql.modelgroup.isSpecQueryModelGroup(item)) { // it's a group
+  if (cql.modelGroup.isSpecQueryModelGroup(item)) { // it's a group
     item.items.forEach(function(childItem) {
       detachViewsInGroup(childItem);
     });
@@ -358,7 +358,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
-      var topItem = cql.modelgroup.getTopItem(childGrp);
+      var topItem = cql.modelGroup.getTopItem(childGrp);
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         var score = topItem.getRankingScore(orderGroupBy)
@@ -371,7 +371,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
     .attr('class', 'grouptype');
 
   groupSelections.select('span.grouptype')
-    .text(group.groupBy +': ');
+    .text(cql.query.groupBy.toString(group.groupBy) +': ');
 
   headersEnter.append('span')
     .attr('class', 'groupname');
