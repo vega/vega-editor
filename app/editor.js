@@ -54,6 +54,14 @@ ved.mode = function() {
       highlightGutterLine: true
     });
 
+    ved.editor[VEGA].session.setFoldStyle("markbeginend");
+    ved.editor[VEGA].setShowFoldWidgets("markbeginend");
+
+    d3.json("vendor/vega-schema.json", function(data) { 
+      ved.schema = data;
+      ved.autocomplete();
+    });
+
     ace.attr('class', 'ace_content');
     debug.init();
   } else if (ved.currentMode === VEGA_LITE) {
@@ -73,6 +81,273 @@ ved.mode = function() {
   ved.editorVisibility();
   ved.getSelect().selectedIndex = 0;
   ved.select('');
+};
+
+ved.resetAutocompleters = function() {
+  ved.editor[VEGA].completers = ved.editor[VEGA].completers.filter(function(c) { return c.getDocTooltip; });
+};
+
+ved.defaultAutocompleters = function() {
+  if(ved.spec.data) ved.addAutocompleter(ved.spec.data.map(function(obj) { return obj.name; }), "data");
+  if(ved.spec.signals) ved.addAutocompleter(ved.spec.signals.map(function(obj) { return obj.name; }), "signal");
+  if(ved.spec.scales) ved.addAutocompleter(ved.spec.scales.map(function(obj) { return obj.name; }), "scale");
+  (ved.view.model().data() || []).forEach(function(data) {
+    ved.addAutocompleter(Object.keys(data.values()[0]), data.name());
+  });
+  ved.contextAutocompleter();
+};
+
+function getTokens(string) {
+  var clean = string.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"").replace(/\s{2,}/g," ");
+  var tokens = clean.split("\"");
+  return tokens.filter(function(value) { return value != " " && value != ""; })
+};
+
+function getScope(row) {
+  var session = ved.editor[VEGA].getSession();
+  var scope = session.getParentFoldRangeData(row);
+  if(scope.range == false) return ["spec"];
+  var tokens = getTokens(session.getDocument().getLine(scope.range.start.row));
+  if(tokens.length == 0) tokens = getScope(scope.range.start.row);
+  return tokens;
+};
+
+function getWordList(currentTokens, prefix, scopeTokens) {
+  if(scopeTokens.length > 1) console.log("BIG scope?", scopeTokens);
+  var scope = scopeTokens[0];
+  if(scope == "properties") scope = "propset"; // TODO: This seems sketchy...
+  if(ved.schema.defs[scope]) {
+    return extractKeywords(ved.schema.defs[scope], currentTokens, prefix);
+  } else if(ved.schema.defs.container.properties[scope]) {
+    return extractKeywords(ved.schema.defs.container.properties[scope], currentTokens, prefix);
+  } else if(ved.schema.defs.spec.allOf[1].properties[scope]) {
+    return extractKeywords(ved.schema.defs.spec.allOf[1].properties[scope], currentTokens, prefix);
+  } else {
+    console.log("HELP (we probably should be here...): ", ved.schema.defs, scope)
+  }
+};
+
+function extractKeywords(schemaObj, currentTokens, prefix) {
+  var array;
+
+  if(schemaObj.properties) {
+    return getScores(schemaObj.properties, currentTokens, prefix);
+  } else if(schemaObj.items) {
+    return extractKeywords(schemaObj.items, currentTokens, prefix);
+  } else if(schemaObj.$ref) {
+    var tokens = schemaObj.$ref.split("/");
+    return extractKeywords(ved.schema[tokens[1]][tokens[2]], currentTokens, prefix);
+  } else if(array = (schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf)) {
+    var wordList = [];
+    Object.keys(array).forEach(function(obj) {
+      wordList = wordList.concat(extractKeywords(array[obj], currentTokens, prefix));
+    });
+    return wordList;
+  } else if(schemaObj.required || schemaObj.not) {
+    return [];
+  } else {
+    console.log("HELP (we probably shouldn't be at this case...): ", schemaObj)
+  }
+};
+
+function getScores(properties, tokens, prefix) {
+  var wordList = [];
+  Object.keys(properties).forEach(function(property) {
+    wordList = wordList.concat([{
+      "word": property, 
+      "score": getScore(property, tokens, prefix, "")
+    }]);
+
+    if(properties[property].type == "string" || properties[property].type == "boolean") {
+      // Do nothing.
+    } else if(properties[property].enum) {
+      properties[property].enum.forEach(function(value) {
+        var score = getScore(value, tokens, prefix, property);
+        wordList = wordList.concat([{"word": value, "score": score}]);
+        if(property == "type" && value == "rect") console.log("SCORE: ", score)
+      })
+    }  else {
+      console.log("     ", property, ":", properties[property])
+    }
+
+  });
+  return wordList;
+};
+
+function getScore(property, tokens, prefix, parent) {
+  var score = 50;
+  if(property.indexOf(prefix) != -1) score += 50; // Increase if typing started
+  if(tokens.indexOf(property) != -1) score -= 50; // Decrease if already in the line
+  if(tokens.indexOf(parent) != -1) score += 50;   // Increase if parent in the line
+  return score;
+};
+
+ved.contextAutocompleter = function() {
+  var staticWordCompleter = {
+    getCompletions: function(editor, session, pos, prefix, callback) {
+      var currentTokens = getTokens(ved.editor[VEGA].getSession().getDocument().getLine(pos.row));
+      var scopeTokens = getScope(pos.row);
+      var wordList = {};
+      var words = getWordList(currentTokens, prefix, scopeTokens);
+      words.map(function(wordObj) { return wordList[wordObj.word] = wordObj.score; });
+      callback(null, Object.keys(wordList).map(function(word) {
+          return {
+              caption: word,
+              value: word,
+              score: wordList[word],
+              meta: "vega"
+          };
+      }));
+    }
+  }
+  ved.editor[VEGA].completers.push(staticWordCompleter);
+};
+
+ved.addAutocompleter = function(wordList, category) {
+
+  // NOTE: I think we can add a "score" property to the return from the callback that determines
+  //       how high in the list it should be based on the relevant scope and such.
+  // Note: If the score is zero, then it won't appear. We can use this to hide certain values that are inappropriate.
+
+  var staticWordCompleter = {
+    getCompletions: function(editor, session, pos, prefix, callback) {
+      callback(null, wordList.map(function(word) {
+          return {
+              caption: word,
+              value: word,
+              meta: category
+          };
+      }));
+    }
+  }
+  ved.editor[VEGA].completers.push(staticWordCompleter);
+};
+
+ved.autocomplete = function() {
+  if(ved.currentMode === VEGA) {
+    ved.editor[VEGA].setOptions({
+      enableBasicAutocompletion: true,
+      enableSnippets: true,
+      enableLiveAutocompletion: true
+    });
+
+    console.log(ved.schema)
+
+    // NOTE: The snippet variables have the class "ace_snippet-marker" which I can probably modify
+    //       to have the visual salience I want.
+
+    /* TODO: This is *almost* what I want.
+     *       The problem is that when I do this, it doesn't actually insert a { which would
+     *       be annoying if you were actually writing something by hand. Instead, I want to
+     *       insert the character, and *only* show the snippets with this key command.
+     */
+    //ved.editor[VEGA].commands.bindKey("{", "startAutocomplete");
+
+    // Parse the schema into snippets
+    var snippets = [];
+    var specialCases = ["spec", "container"];
+    Object.keys(ved.schema.defs).forEach(function(key) {
+      if(specialCases.indexOf(key) != -1) return;
+
+      var map = {};
+      var index = 0;
+
+      // Top-Level required
+      if(ved.schema.defs[key].required) ved.schema.defs[key].required.forEach(function(value) { map[value] = map[value] || ++index; });
+      
+      // Top-Level allOf
+      (ved.schema.defs[key].allOf || []).forEach(function(all) {
+        if(all.required) all.required.forEach(function(value) { map[value] = map[value] || ++index; });
+        if(all.anyOf) console.log("Mid-level anyOf", key)
+        if(all.oneOf) {
+          all.oneOf.forEach(function(one) {
+            if(one.required) one.required.forEach(function(value) { map[value] = map[value] || ++index; });
+            if(one.allOf) console.log("bottom-level allOf", key)
+            if(one.anyOf) console.log("bottom-level anyOf", key)
+            if(one.oneOf) console.log("bottom-level oneOf", key)
+          });
+        }
+      });
+
+      // Create Snippet
+      var string = "{";
+      var keys = Object.keys(map);
+      var isTransform = key.indexOf("Transform") != -1;
+      if(isTransform) key = key.replace("Transform", "");
+      keys.forEach(function(property) {
+        var index = map[property];
+        if(isTransform && property == "type") {
+          string += "\"" + property + "\": \"" + key + "\"";
+        } else {
+          string += "\"" + property + "\": ${" + index + ":" + property + "}";
+        }
+        string += index == keys.length ? "" : ", ";
+      });
+      string += "}";
+      var obj = {
+        "name": key + " def", 
+        "content": string/*,
+        "tabTrigger": "{\"" + start + "\""*/
+      };
+      if(isTransform) key += "Transform";
+      if(obj.content == "{}") {
+        console.log("  Missing: ", obj.name);
+      } else {
+        snippets.push(obj);
+      }
+
+      // Top-Level anyOf
+      if(ved.schema.defs[key].anyOf) console.log("Top-level anyOf", key)
+
+      // Top-Level oneOf
+      if(ved.schema.defs[key].oneOf) console.log("Top-level oneOf", key)
+    }); 
+
+    // Generate the top-level snippets
+    specialCases.forEach(function(key) {
+      var properties = key=="container" ? ved.schema.defs[key] : ved.schema.defs[key].allOf.filter(function(obj) { return obj.properties; })[0];
+      Object.keys(properties.properties).forEach(function(property) {
+        var info = properties.properties[property];
+        if(info.type == "array") {
+          var string = "\"" + property + "\": [";
+          if(info.items.$ref) {
+            var snippet = snippets.filter(function(snip) { 
+              var reference = info.items.$ref.split("/");
+              return snip.name.split(" ")[0] == reference[reference.length - 1];
+            });
+            if(snippet.length == 0) {
+              console.log("  Missing: ", property);
+            } else {
+              string += snippet[0].content + "]";
+            }
+          }
+          if(string.indexOf("}") == -1) {
+            console.log("  Missing: ", property);
+          } else {
+            var obj = {"name": property, "content": string};
+            snippets.push(obj);
+          }
+        }
+      });
+    });
+
+    console.log("Snippets", snippets)
+
+    // Snippet information
+    // Based off: http://blog.rymo.io/2014/07/integrating-the-ace-editor-into-your-project/
+
+    var snippetManager = ace.require("ace/snippets").snippetManager;
+    snippetManager.files = {};
+    var obj = {"scope": "json", "snippetText": ""};
+    snippetManager.files["ace/mode/json"] = obj;
+
+    obj.snippets = snippets;
+    snippetManager.register(obj.snippets, obj.scope);
+
+    // TODO: Note, when you don't reset the completers like this, there is a "local" completer that fills things locally.
+    // This *might* be really helpful, but I wanted something less cluttered for now.
+    ved.editor[VEGA].completers = ved.editor[VEGA].completers.filter(function(c) { return c.getDocTooltip; });
+  }
 };
 
 ved.switchToVega = function() {
@@ -265,6 +540,9 @@ ved.parseVg = function(callback) {
     ved.spec = result.spec;
     ved.view = result.view;
     callback(null, result.view);
+    ved.resetAutocompleters();
+    ved.defaultAutocompleters();
+
     if(ved.currentMode === VEGA) {
       debug.start();
     }
