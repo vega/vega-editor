@@ -2,18 +2,22 @@
 
 .btn_debug {
 	padding: 0px 5px;
-	color: #aaa;
+	color: #666;
   cursor: pointer;
 }
 
 .btn_mode {
 	padding-left: 5px;
-	color: #aaa;
+	color: #666;
   cursor: pointer;
 }
 
-.btn_mode.selected, .btn_debug.selected {
-	color: #4F99FC;
+.btn_debug.selected {
+	color: #00AA00;
+}
+
+.btn_mode.selected {
+  color: #4F99FC;
 }
 
 /* hide debugging tools unless in debug mode */
@@ -84,9 +88,6 @@
 
 /************************* Data Table *************************/
 /*************************** Table ****************************/
-#data {
-  width: 100px;
-}
 
 #header {
   overflow: scroll;
@@ -106,6 +107,7 @@
   overflow: scroll;
   border-collapse: collapse;
   font-size: 8pt;
+  cursor: pointer;
 }
 
 #data table::-webkit-scrollbar {
@@ -209,7 +211,7 @@ span.name {
 }
 
 /*************************** Table ****************************/
-#timeline, table, tr {
+#timeline, #timeline table, #timeline tr {
   width: 100%;
 }
 

@@ -6,6 +6,7 @@ alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
 var VEGA = 'vega';
 var VEGA_LITE = 'vega-lite';
 var COMPASSQL = 'compassql';
+var VEGA_CONFIG = 'vega-config';
 
 var ved = {
   version: '1.2.0',
@@ -13,7 +14,9 @@ var ved = {
   renderType: 'canvas',
   editor: {
     vega: null,
-    'vega-lite': null
+    'vega-lite': null,
+    compassql: null,
+    config: null
   },
   currentMode: null,
   vgHidden: true  // vega editor hidden in vl mode
@@ -153,7 +156,7 @@ ved.select = function(spec) {
 
 ved.uri = function(entry) {
   return ved.path + 'spec/' + ved.currentMode +
-    '/' + entry.name + '.json';
+    '/' + entry.name + (ved.currentMode === VEGA_LITE ? '.vl' : '') + '.json';
 };
 
 ved.renderer = function() {
@@ -222,8 +225,9 @@ ved.parseVg = function(callback) {
     };
   }
 
-  var opt, source,
-    value = ved.editor[VEGA].getValue();
+  var value = ved.editor[VEGA].getValue(),
+    config  = ved.editor[VEGA_CONFIG].getValue() || '{}',
+    opt;
 
   // delete cookie if editor is empty
   if (!value) {
@@ -232,7 +236,8 @@ ved.parseVg = function(callback) {
   }
 
   try {
-    opt = JSON.parse(ved.editor[VEGA].getValue());
+    opt = JSON.parse(value);
+    config = JSON.parse(config);
   } catch (e) {
     return callback(e);
   }
@@ -261,6 +266,7 @@ ved.parseVg = function(callback) {
   opt.actions = false;
   opt.renderer = opt.renderer || ved.renderType;
   opt.parameter_el = '.mod_params';
+  opt.config = config;
 
   ved.resetView();
   var a = vg.embed('.vis', opt, function(err, result) {
@@ -570,6 +576,7 @@ ved.resetView = function() {
 
 ved.resize = function(event) {
   ved.editor[VEGA].resize();
+  ved.editor[VEGA_CONFIG].resize();
   ved.editor[VEGA_LITE].resize();
   ved.editor[COMPASSQL].resize();
 };
@@ -723,8 +730,10 @@ ved.init = function(el, dir) {
     var vlEditor = ved.editor[VEGA_LITE] = ace.edit(el.select('.vl-spec').node());
     var vgEditor = ved.editor[VEGA] = ace.edit(el.select('.vg-spec').node());
     var cqlEditor = ved.editor[COMPASSQL] = ace.edit(el.select('.cql-spec').node());
+    var vcEditor = ved.editor[VEGA_CONFIG] = ace.edit(el.select('.vc-spec').node());
 
-    [vlEditor, vgEditor, cqlEditor].forEach(function(editor) {
+
+    [vlEditor, vgEditor, cqlEditor, vcEditor].forEach(function(editor) {
       editor.getSession().setMode('ace/mode/json');
       editor.getSession().setTabSize(2);
       editor.getSession().setUseSoftTabs(true);
@@ -766,6 +775,7 @@ ved.init = function(el, dir) {
     }));
     d3.select(window).on('resize', ved.resize);
     ved.resize();
+    config.init();
 
     var getIndexes = function(obj) {
       return Object.keys(obj).reduce(function(a, k) {

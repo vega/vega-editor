@@ -29,6 +29,10 @@ debug.init = function() {
 		ved.resize();
 	});
 
+  d3.select(".fa-question-circle").on("click", function() {
+    d3.event.stopPropagation();
+  });
+
   d3.select(".click_toggle_vega.debug")
       .style("margin-left", function() {
         return this.parentNode.getBoundingClientRect().width / 2 - 175 + "px";
@@ -64,6 +68,8 @@ debug.init = function() {
   d3.select("body").on("keydown", keyboardNavigation);
 
   specVisibility();
+
+  debug.width = d3.select("#overview").style("width");
 };
 
 debug.start = function() {
@@ -87,13 +93,22 @@ debug.reset = function() {
   timeline.reset(panel, model.streams);
   overview.reset();
   datasets.reset(panel);
+
+  // Switch to the data if there are no signals
+  if(Object.keys(model.streams).length == 0) {
+    debug.view = "data";
+    d3.select(".sel_debug").selectAll("option")
+        .filter(function() { 
+          return this.value == "data";
+        })[0][0].selected = true;
+  }
   viewVisibility();
 };
 
 debug.update = function(click) {
   if(!debug.open) return;
   if(debug.view === "timeline") timeline.update(model.streams);
-  if(debug.view === "data") datasets.update();
+
   overview.update(model.pulseCounts, model.streams);
   if(debug.currentMode === "replay") {
     annotation.overlay();
@@ -101,6 +116,19 @@ debug.update = function(click) {
   } else {
     if(annotation.svg) annotation.svg.remove();
     annotation.svg = null;
+  }
+  
+  if(debug.view === "data") {
+    var change = 0;
+    if(model.difference[datasets.active]) {
+      var index = model.pulses.indexOf(model.current.pulse);
+      model.schema[datasets.active].forEach(function(property) {
+        var difference = model.difference[datasets.active][property];
+        change += difference[index];
+      });
+    }
+    var changed = !model.difference[datasets.active] || change != 0;
+    datasets.update(changed);
   }
 };
 
