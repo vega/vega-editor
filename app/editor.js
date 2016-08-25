@@ -147,7 +147,7 @@ ved.select = function(spec) {
 
 ved.uri = function(entry) {
   return ved.path + 'spec/' + ved.currentMode +
-    '/' + entry.name + '.json';
+    '/' + entry.name + (ved.currentMode === VEGA_LITE ? '.vl' : '') + '.json';
 };
 
 ved.renderer = function() {
