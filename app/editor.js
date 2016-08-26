@@ -94,113 +94,9 @@ ved.defaultAutocompleters = function() {
   (ved.view.model().data() || []).forEach(function(data) {
     ved.addAutocompleter(Object.keys(data.values()[0]), data.name());
   });
-  ved.contextAutocompleter();
-};
 
-function getTokens(string) {
-  var clean = string.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"").replace(/\s{2,}/g," ");
-  var tokens = clean.split("\"");
-  return tokens.filter(function(value) { return value != " " && value != ""; })
-};
-
-function getScope(row) {
-  var session = ved.editor[VEGA].getSession();
-  var scope = session.getParentFoldRangeData(row);
-  if(scope.range == false) return ["spec"];
-  var tokens = getTokens(session.getDocument().getLine(scope.range.start.row));
-  if(tokens.length == 0) tokens = getScope(scope.range.start.row);
-  return tokens;
-};
-
-function getWordList(currentTokens, prefix, scopeTokens) {
-  if(scopeTokens.length > 1) console.log("BIG scope?", scopeTokens);
-  var scope = scopeTokens[0];
-  if(scope == "properties") scope = "propset"; // TODO: This seems sketchy...
-  if(ved.schema.defs[scope]) {
-    return extractKeywords(ved.schema.defs[scope], currentTokens, prefix);
-  } else if(ved.schema.defs.container.properties[scope]) {
-    return extractKeywords(ved.schema.defs.container.properties[scope], currentTokens, prefix);
-  } else if(ved.schema.defs.spec.allOf[1].properties[scope]) {
-    return extractKeywords(ved.schema.defs.spec.allOf[1].properties[scope], currentTokens, prefix);
-  } else {
-    console.log("HELP (we probably should be here...): ", ved.schema.defs, scope)
-  }
-};
-
-function extractKeywords(schemaObj, currentTokens, prefix) {
-  var array;
-
-  if(schemaObj.properties) {
-    return getScores(schemaObj.properties, currentTokens, prefix);
-  } else if(schemaObj.items) {
-    return extractKeywords(schemaObj.items, currentTokens, prefix);
-  } else if(schemaObj.$ref) {
-    var tokens = schemaObj.$ref.split("/");
-    return extractKeywords(ved.schema[tokens[1]][tokens[2]], currentTokens, prefix);
-  } else if(array = (schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf)) {
-    var wordList = [];
-    Object.keys(array).forEach(function(obj) {
-      wordList = wordList.concat(extractKeywords(array[obj], currentTokens, prefix));
-    });
-    return wordList;
-  } else if(schemaObj.required || schemaObj.not) {
-    return [];
-  } else {
-    console.log("HELP (we probably shouldn't be at this case...): ", schemaObj)
-  }
-};
-
-function getScores(properties, tokens, prefix) {
-  var wordList = [];
-  Object.keys(properties).forEach(function(property) {
-    wordList = wordList.concat([{
-      "word": property, 
-      "score": getScore(property, tokens, prefix, "")
-    }]);
-
-    if(properties[property].type == "string" || properties[property].type == "boolean") {
-      // Do nothing.
-    } else if(properties[property].enum) {
-      properties[property].enum.forEach(function(value) {
-        var score = getScore(value, tokens, prefix, property);
-        wordList = wordList.concat([{"word": value, "score": score}]);
-        if(property == "type" && value == "rect") console.log("SCORE: ", score)
-      })
-    }  else {
-      console.log("     ", property, ":", properties[property])
-    }
-
-  });
-  return wordList;
-};
-
-function getScore(property, tokens, prefix, parent) {
-  var score = 50;
-  if(property.indexOf(prefix) != -1) score += 50; // Increase if typing started
-  if(tokens.indexOf(property) != -1) score -= 50; // Decrease if already in the line
-  if(tokens.indexOf(parent) != -1) score += 50;   // Increase if parent in the line
-  return score;
-};
-
-ved.contextAutocompleter = function() {
-  var staticWordCompleter = {
-    getCompletions: function(editor, session, pos, prefix, callback) {
-      var currentTokens = getTokens(ved.editor[VEGA].getSession().getDocument().getLine(pos.row));
-      var scopeTokens = getScope(pos.row);
-      var wordList = {};
-      var words = getWordList(currentTokens, prefix, scopeTokens);
-      words.map(function(wordObj) { return wordList[wordObj.word] = wordObj.score; });
-      callback(null, Object.keys(wordList).map(function(word) {
-          return {
-              caption: word,
-              value: word,
-              score: wordList[word],
-              meta: "vega"
-          };
-      }));
-    }
-  }
-  ved.editor[VEGA].completers.push(staticWordCompleter);
+  // Add the main vega autocompleter.
+  ved.VegaAutocompleter();
 };
 
 ved.addAutocompleter = function(wordList, category) {
@@ -223,6 +119,176 @@ ved.addAutocompleter = function(wordList, category) {
   ved.editor[VEGA].completers.push(staticWordCompleter);
 };
 
+ved.VegaAutocompleter = function() {
+  var staticWordCompleter = {
+    getCompletions: function(editor, session, pos, prefix, callback) {
+      var tokens = getTokens(ved.editor[VEGA].getSession().getDocument().getLine(pos.row));
+      var scope = getScope(pos.row)[0];
+      var wordList = {};
+      Object.keys(words).map(function(word) {
+        wordList[word] = getScore(word, words[word].scope, prefix, tokens, scope);
+      });
+      //console.log("prefix: (", prefix, ") tokens: (", tokens, ") scope: (", scope, ")")
+      callback(null, Object.keys(wordList).map(function(word) {
+          return {
+              caption: word,
+              value: word,
+              score: wordList[word],
+              meta: "vega"
+          };
+      }));
+    }
+  }
+  ved.editor[VEGA].completers.push(staticWordCompleter);
+};
+  
+function getTokens(string) {
+  var clean = string.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]]/g,"").replace(/\s{2,}/g," ");
+  var tokens = clean.split("\"");
+  return tokens.filter(function(value) { return value != " " && value != ""; })
+};
+
+function getScope(row) {
+  var session = ved.editor[VEGA].getSession();
+  var scope = session.getParentFoldRangeData(row);
+  if(scope.range == false) return ["spec"];
+  var tokens = getTokens(session.getDocument().getLine(scope.range.start.row));
+  if(tokens.length == 0) tokens = getScope(scope.range.start.row);
+  return tokens;
+};
+
+function getScore(word, wordScopes, prefix, tokens, scope) {
+  var score = 0;
+  //if(wordScopes.indexOf(scope) != -1) console.log("Word (" + word + ") in scope.");
+  if(wordScopes.indexOf(scope) != -1) score += 50;      // Increase if the word scope contains the current scope.
+  if(word.indexOf(prefix) != -1) score += 50;           // Increase if word has prefix.
+  if(tokens.indexOf(word) != -1) score -= 25;           // Decrease if word already in the line.
+  return score;
+};
+
+var snippets = [];
+var words = {};
+var visited = [];
+var missing = [];
+function extract(object, name, parent) {
+  //console.log("EXTRACTING: ", name, object)
+  createWord(object, name, parent);
+
+  if(object.required) createSnippet(object, name, parent);
+
+  // Process the property's children
+  if(object.$ref) {
+    if(visited.indexOf(object.$ref) != -1) {
+      createWord(object, name, parent);
+    } else {
+      visited.push(object.$ref);
+      var reference = object.$ref.split("/");
+      extract(ved.schema[reference[1]][reference[2]], name, parent);
+    }
+  } 
+  else if(object.allOf) {
+    object.allOf.forEach(function(el) {
+      extract(el, name, parent);
+    });
+  }
+  else if(object.anyOf) {
+    object.anyOf.forEach(function(el) {
+      extract(el, name, parent);
+    });
+  }
+  else if(object.oneOf) {
+    object.oneOf.forEach(function(el) {
+      extract(el, name, parent);
+    });
+  }
+  else if(object.items) {
+    createSnippet(object, name, name);
+    extract(object.items, name, name);
+  }
+  else if(object.additionalProperties) {
+    extract(object.additionalProperties, name, parent);
+  }
+  else if(object.enum) {
+    object.enum.forEach(function(el) {
+      createWord(el, el, parent);
+    });
+  }
+  else if(object.type == "boolean") {
+    createWord("true", "true", name);
+    createWord("false", "false", name);
+  }
+  else if(object.type == "null") {
+    createWord("null", "null", name);
+  }
+  else if(object.properties) {
+    Object.keys(object.properties).forEach(function(property) {
+      extract(object.properties[property], property, name);
+    });
+  } 
+  else if(object.type == "number" || object.type == "string" || object.type == "array"
+         || object.description || object.not || object.required
+         || (object.type && object.type.length == 2) || Object.keys(object).length == 0) {
+    // There is nothing to do here.
+  } 
+  else {
+    console.log("  Confused?", object, "(", name, ") for parent: ", parent);
+  }
+};
+
+function createSnippet(object, name, parent) {
+  //console.log("  create snippet: ", object, name, parent);
+  var snippet = {"content": "MISSING"};
+  if(object.type == "object") snippet = createObjectSnippet(object, name, parent);
+  if(object.type == "array") snippet = createArraySnippet(object, name, parent);
+
+  var snippetExists = snippets.map(function(snip) { 
+    return snip.content; 
+  }).indexOf(snippet.content) != -1;
+  if(!snippetExists && !(snippet.content == "MISSING")) snippets.push(snippet);
+};
+
+function createObjectSnippet(object, name, parent) {
+  var title = object.title || name;
+  var isTransform = title.indexOf("transform") != -1;
+  var string = "{";
+  var index = 0;
+  object.required.forEach(function(property) {
+    if(isTransform && property == "type") {
+      var transform = object.properties.type.enum[0];
+      string += "\"" + property + "\": \"" + transform + "\"";
+      if(object.required.length > 1) string += ", ";
+    } else {
+      string += "\"" + property + "\": ${" + ++index + ":" + property + "}";
+      var length = isTransform ? object.required.length - 1 : object.required.length;
+      string += index == length ? "" : ", ";
+    }
+  });
+  string += "}";
+
+  var snippet = {"name": title, "content": string};
+  return snippet;
+};
+
+function createArraySnippet(object, name, parent) { 
+  if(object.items.type == "string" || object.items.type == "number") {
+    var string = "\"field\": [${1:" + object.items.type + "}]";
+    var snippet = {"name": name, "content": string};
+    return snippet;
+  } else {
+    missing.push(name);
+    return {"content": "MISSING"}
+  }
+};
+
+function createWord(object, name, parent) {
+  if(name == parent) return;
+  if(!words[name]) {
+    words[name] = {"scope": [parent]};
+  } else if(words[name] && words[name].scope.indexOf(parent) == -1) {
+    words[name].scope.push(parent);
+  }
+};
+
 ved.autocomplete = function() {
   if(ved.currentMode === VEGA) {
     ved.editor[VEGA].setOptions({
@@ -231,7 +297,16 @@ ved.autocomplete = function() {
       enableLiveAutocompletion: true
     });
 
-    console.log(ved.schema)
+    var reference = ved.schema.$ref.split("/");
+    extract(ved.schema[reference[1]][reference[2]], reference[2], "spec");
+    console.log("Words", words)
+    var objects = Object.keys(words).map(function(word) { 
+      return obj = {"word": word, "length": words[word].scope.length, "scopes": words[word].scope}
+    });
+    var lengths = objects.map(function(obj) { return obj.length; });
+    console.log("Max", Math.max(...lengths), objects);
+    console.log("Missing snippets", missing);
+
 
     // NOTE: The snippet variables have the class "ace_snippet-marker" which I can probably modify
     //       to have the visual salience I want.
@@ -242,94 +317,6 @@ ved.autocomplete = function() {
      *       insert the character, and *only* show the snippets with this key command.
      */
     //ved.editor[VEGA].commands.bindKey("{", "startAutocomplete");
-
-    // Parse the schema into snippets
-    var snippets = [];
-    var specialCases = ["spec", "container"];
-    Object.keys(ved.schema.defs).forEach(function(key) {
-      if(specialCases.indexOf(key) != -1) return;
-
-      var map = {};
-      var index = 0;
-
-      // Top-Level required
-      if(ved.schema.defs[key].required) ved.schema.defs[key].required.forEach(function(value) { map[value] = map[value] || ++index; });
-      
-      // Top-Level allOf
-      (ved.schema.defs[key].allOf || []).forEach(function(all) {
-        if(all.required) all.required.forEach(function(value) { map[value] = map[value] || ++index; });
-        if(all.anyOf) console.log("Mid-level anyOf", key)
-        if(all.oneOf) {
-          all.oneOf.forEach(function(one) {
-            if(one.required) one.required.forEach(function(value) { map[value] = map[value] || ++index; });
-            if(one.allOf) console.log("bottom-level allOf", key)
-            if(one.anyOf) console.log("bottom-level anyOf", key)
-            if(one.oneOf) console.log("bottom-level oneOf", key)
-          });
-        }
-      });
-
-      // Create Snippet
-      var string = "{";
-      var keys = Object.keys(map);
-      var isTransform = key.indexOf("Transform") != -1;
-      if(isTransform) key = key.replace("Transform", "");
-      keys.forEach(function(property) {
-        var index = map[property];
-        if(isTransform && property == "type") {
-          string += "\"" + property + "\": \"" + key + "\"";
-        } else {
-          string += "\"" + property + "\": ${" + index + ":" + property + "}";
-        }
-        string += index == keys.length ? "" : ", ";
-      });
-      string += "}";
-      var obj = {
-        "name": key + " def", 
-        "content": string/*,
-        "tabTrigger": "{\"" + start + "\""*/
-      };
-      if(isTransform) key += "Transform";
-      if(obj.content == "{}") {
-        console.log("  Missing: ", obj.name);
-      } else {
-        snippets.push(obj);
-      }
-
-      // Top-Level anyOf
-      if(ved.schema.defs[key].anyOf) console.log("Top-level anyOf", key)
-
-      // Top-Level oneOf
-      if(ved.schema.defs[key].oneOf) console.log("Top-level oneOf", key)
-    }); 
-
-    // Generate the top-level snippets
-    specialCases.forEach(function(key) {
-      var properties = key=="container" ? ved.schema.defs[key] : ved.schema.defs[key].allOf.filter(function(obj) { return obj.properties; })[0];
-      Object.keys(properties.properties).forEach(function(property) {
-        var info = properties.properties[property];
-        if(info.type == "array") {
-          var string = "\"" + property + "\": [";
-          if(info.items.$ref) {
-            var snippet = snippets.filter(function(snip) { 
-              var reference = info.items.$ref.split("/");
-              return snip.name.split(" ")[0] == reference[reference.length - 1];
-            });
-            if(snippet.length == 0) {
-              console.log("  Missing: ", property);
-            } else {
-              string += snippet[0].content + "]";
-            }
-          }
-          if(string.indexOf("}") == -1) {
-            console.log("  Missing: ", property);
-          } else {
-            var obj = {"name": property, "content": string};
-            snippets.push(obj);
-          }
-        }
-      });
-    });
 
     console.log("Snippets", snippets)
 
