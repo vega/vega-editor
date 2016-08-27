@@ -294,14 +294,21 @@ ved.cql.init = function(data) {
   ved.cql.schema = cql.schema.Schema.build(data);
 };
 
-function getRankingSummaryText(orderBy, score) {
-  if (!score) {
-    return null;
+function getRankingSummaryText(orderBy, specM) {
+  if (!Array.isArray(orderBy)) {
+    orderBy = [orderBy];
   }
-  return orderBy + '=' + score.score + '\n\n' +
-    score.features.map(function(feature) {
-      return feature.score + ' : ' +feature.type + '.' + feature.feature;
-    }).join(',\n');
+
+  return orderBy.map(function(o) {
+    var score = specM.getRankingScore(o);
+    if (!score) {
+      return '';
+    }
+    return '** ' + o + '=' + score.score + ' **\n' +
+      score.features.map(function(feature) {
+        return feature.score + ' : ' +feature.type + '.' + feature.feature;
+      }).join(',\n');
+  }).join('\n\n');
 }
 
 /**
@@ -367,8 +374,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
       var topItem = childGrp.getTopSpecQueryModel();
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
-        var score = topItem.getRankingScore(orderGroupBy)
-        return getRankingSummaryText(orderGroupBy, score);
+        return getRankingSummaryText(orderGroupBy, topItem);
       }
       return null;
     });
@@ -473,8 +479,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
   selections.select('div.itemname')
     .attr('title', function(d) {
       var orderBy = ved.cql.query.orderBy;
-
-      return getRankingSummaryText(orderBy, d.getRankingScore(orderBy));
+      return getRankingSummaryText(orderBy, d);
     });
 
   enter.append('div')
