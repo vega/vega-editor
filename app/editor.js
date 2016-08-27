@@ -420,6 +420,14 @@ ved.cql.groupRenderer = function(indexPrefix) {
     var sel = d3.select(this).select('.grouplist');
 
     if (!group || group.items.length === 0) {
+      sel.selectAll(function() { return this.childNodes; })
+        .data([])
+        .exit()
+        .each(function(model) {
+          detachViewsInGroup(model);
+        })
+        .remove();
+
       return;
     }
 
@@ -445,7 +453,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
 
   // unregister signals for exiting views
   selections.exit().each(function(model) {
-    detachView(model);
+    detachViewsInGroup(model);
   });
 
   selections.exit().remove();
