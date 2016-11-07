@@ -36,13 +36,12 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "ace-builds": "ajaxorg/ace-builds",
-    "d3": "^3.5.6",
+    "d3": "^4.3.0",
     "d3-cloud": "^1.2.1",
     "d3-geo-projection": "^0.2.15",
     "topojson": "^1.6.24",
+    "vega": "^3.0.0-beta.3",
     "vega-datasets": "vega/vega-datasets#gh-pages",
-    "vega": "^2.0.0",
-    "vega-embed": "latest",
     "vega-lite": "^1.0.0"
   },
   "devDependencies": {
@@ -50,7 +49,6 @@
   },
   "scripts": {
     "deploy": "scripts/deploy.sh",
-    "prevendor": "npm install",
     "vendor": "scripts/vendor.sh",
     "start": "python -m SimpleHTTPServer"
   }

@@ -8,7 +8,6 @@ SPEC=app/spec
 CWD=$(pwd)
 VEGA_OP="cp -R"
 VEGA_DATASETS_OP="cp -R"
-VEGA_EMBED_OP="cp -R"
 VEGA_LITE_OP="cp -R"
 
 while getopts :l: FLAG; do
@@ -33,13 +32,9 @@ if [ ! -d "$TARGET" ]; then
   mkdir $TARGET
 fi
 
-cp node_modules/d3/d3.min.js $TARGET
-cp node_modules/d3-cloud/build/d3.layout.cloud.js $TARGET
-cp node_modules/d3-geo-projection/d3.geo.projection.min.js $TARGET
-cp node_modules/topojson/build/topojson.js $TARGET
+cp node_modules/d3/build/d3.min.js $TARGET
 cp lib/json3-compactstringify.js $TARGET
-eval $VEGA_OP "$CWD/node_modules/vega/vega*" $TARGET
-eval $VEGA_EMBED_OP "$CWD/node_modules/vega-embed/vega-embed*" $TARGET
+eval $VEGA_OP "$CWD/node_modules/vega/build/vega*" $TARGET
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/vega-lite*" $TARGET
 
 if [ ! -d "$TARGET/ace" ]; then
@@ -64,6 +59,6 @@ if [ ! -d "$SPEC" ]; then
   mkdir $SPEC
 fi
 
-eval $VEGA_OP "$CWD/node_modules/vega/examples" "$SPEC/vega"
+eval $VEGA_OP "$CWD/node_modules/vega/spec" "$SPEC/vega"
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/examples/specs" "$SPEC/vega-lite"
 echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/examples/vl-examples.json` > app/vl-specs.js
