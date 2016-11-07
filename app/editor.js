@@ -239,7 +239,7 @@ ved.parseVg = function(callback) {
   new vega.View(runtime)
     .logLevel(vega.Warn)
     .initialize(document.querySelector('.vis'))
-    .renderer(opt.renderer || ved.renderType)
+    .renderer(ved.renderType)
     .run();
 };
 
