@@ -236,8 +236,10 @@ ved.parseVg = function(callback) {
   ved.resetView();
 
   const runtime = vega.parse(vegaSpec);
-  new vega.View(runtime, {loader: vega.loader({baseURL: this.path})})
-    .logLevel(vega.Warn)
+  ved.view = new vega.View(runtime, {
+    loader: vega.loader({baseURL: ved.path})
+  });
+  ved.view.logLevel(vega.Warn)
     .initialize(document.querySelector('.vis'))
     .renderer(ved.renderType)
     .run();
