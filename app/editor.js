@@ -236,7 +236,7 @@ ved.parseVg = function(callback) {
   ved.resetView();
 
   const runtime = vega.parse(vegaSpec);
-  new vega.View(runtime)
+  new vega.View(runtime, {loader: vega.loader({baseURL: this.path})})
     .logLevel(vega.Warn)
     .initialize(document.querySelector('.vis'))
     .renderer(ved.renderType)
@@ -339,7 +339,6 @@ ved.getSelect = function() {
 ved.init = function(el, dir) {
   // Set base directory
   var PATH = dir || 'app/';
-  // vega.config.load.baseURL = PATH;
   ved.path = PATH;
 
   el = (ved.$d3 = d3.select(el));
