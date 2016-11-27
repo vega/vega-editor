@@ -207,7 +207,6 @@ ved.parseVg = function(callback) {
   if (!callback) {
     callback = function(err) {
       if (err) {
-        if (ved.view) ved.view.destroy();
         console.error(err);
       }
     };
@@ -247,7 +246,6 @@ ved.parseVg = function(callback) {
 
 ved.resetView = function() {
   var $d3 = ved.$d3;
-  if (ved.view) ved.view.destroy();
   $d3.select('.mod_params').html('');
   $d3.select('.spec_desc').html('');
   $d3.select('.vis').html('');
