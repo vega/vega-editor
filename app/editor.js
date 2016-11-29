@@ -238,7 +238,7 @@ ved.parseVg = function(callback) {
   ved.view = new vega.View(runtime, {
     loader: vega.loader({baseURL: ved.path})
   });
-  ved.view.logLevel(vega.Warn)
+  ved.view.logLevel(vega.Info)
     .initialize(document.querySelector('.vis'))
     .renderer(ved.renderType)
     .run();
