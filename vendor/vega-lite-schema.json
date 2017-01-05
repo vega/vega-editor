@@ -1,8 +1,7 @@
 {
-    "oneOf": [
+    "anyOf": [
         {
-            "$ref": "#/definitions/ExtendedUnitSpec",
-            "description": "Schema for a unit Vega-Lite specification, with the syntactic sugar extensions:\n\n- `row` and `column` are included in the encoding.\n\n- (Future) label, box plot\n\n\n\nNote: the spec could contain facet."
+            "$ref": "#/definitions/ExtendedUnitSpec"
         },
         {
             "$ref": "#/definitions/FacetSpec"
@@ -13,6 +12,7 @@
     ],
     "definitions": {
         "ExtendedUnitSpec": {
+            "description": "Schema for a unit Vega-Lite specification, with the syntactic sugar extensions:\n\n- `row` and `column` are included in the encoding.\n\n- (Future) label, box plot\n\n\n\nNote: the spec could contain facet.",
             "type": "object",
             "properties": {
                 "width": {
@@ -114,16 +114,14 @@
                 },
                 "detail": {
                     "description": "Additional levels of detail for grouping data in aggregate views and\n\nin line and area marks without mapping data to a specific visual channel.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "$ref": "#/definitions/FieldDef",
-                            "description": "Interface for any kind of FieldDef;\n\nFor simplicity, we do not declare multiple interfaces of FieldDef like\n\nwe do for JSON schema."
+                            "$ref": "#/definitions/FieldDef"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/FieldDef",
-                                "description": "Interface for any kind of FieldDef;\n\nFor simplicity, we do not declare multiple interfaces of FieldDef like\n\nwe do for JSON schema."
+                                "$ref": "#/definitions/FieldDef"
                             }
                         }
                     ]
@@ -137,7 +135,7 @@
                 },
                 "path": {
                     "description": "Order of data points in line marks.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/OrderChannelDef"
                         },
@@ -151,7 +149,7 @@
                 },
                 "order": {
                     "description": "Layer order for non-stacked marks, or stack order for stacked marks.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/OrderChannelDef"
                         },
@@ -169,25 +167,18 @@
             "type": "object",
             "properties": {
                 "axis": {
-                    "oneOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "$ref": "#/definitions/Axis"
-                        }
-                    ]
+                    "$ref": "#/definitions/Axis"
                 },
                 "scale": {
                     "$ref": "#/definitions/Scale"
                 },
                 "sort": {
-                    "oneOf": [
-                        {
-                            "$ref": "#/definitions/SortField"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/SortOrder"
+                        },
+                        {
+                            "$ref": "#/definitions/SortField"
                         }
                     ]
                 },
@@ -201,16 +192,10 @@
                 },
                 "value": {
                     "description": "A constant value in visual domain.",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "boolean"
-                        }
+                    "type": [
+                        "string",
+                        "number",
+                        "boolean"
                     ]
                 },
                 "timeUnit": {
@@ -219,13 +204,12 @@
                 },
                 "bin": {
                     "description": "Flag for binning a `quantitative` field, or a bin property object\n\nfor binning parameters.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "boolean"
+                            "$ref": "#/definitions/Bin"
                         },
                         {
-                            "$ref": "#/definitions/Bin",
-                            "description": "Binning properties or boolean flag for determining whether to bin data or not."
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -240,176 +224,195 @@
             }
         },
         "Axis": {
-            "type": "object",
-            "properties": {
-                "labelAngle": {
-                    "description": "The rotation angle of the axis labels.",
-                    "type": "number"
-                },
-                "format": {
-                    "description": "The formatting pattern for axis labels.",
-                    "type": "string"
-                },
-                "orient": {
-                    "$ref": "#/definitions/AxisOrient",
-                    "description": "The orientation of the axis. One of top, bottom, left or right. The orientation can be used to further specialize the axis type (e.g., a y axis oriented for the right edge of the chart)."
-                },
-                "title": {
-                    "description": "A title for the axis. Shows field name and its function by default.",
-                    "type": "string"
-                },
-                "values": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "labelAngle": {
+                            "description": "The rotation angle of the axis labels.",
+                            "minimum": 0,
+                            "maximum": 360,
+                            "type": "number"
+                        },
+                        "format": {
+                            "description": "The formatting pattern for axis labels.",
+                            "type": "string"
+                        },
+                        "orient": {
+                            "$ref": "#/definitions/AxisOrient",
+                            "description": "The orientation of the axis. One of top, bottom, left or right. The orientation can be used to further specialize the axis type (e.g., a y axis oriented for the right edge of the chart)."
+                        },
+                        "title": {
+                            "description": "A title for the axis. Shows field name and its function by default.",
+                            "type": "string"
+                        },
+                        "values": {
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/DateTime"
+                                    }
+                                }
+                            ]
+                        },
+                        "axisWidth": {
+                            "description": "Width of the axis line",
+                            "type": "number"
+                        },
+                        "layer": {
+                            "description": "A string indicating if the axis (and any gridlines) should be placed above or below the data marks.",
+                            "type": "string"
+                        },
+                        "offset": {
+                            "description": "The offset, in pixels, by which to displace the axis from the edge of the enclosing group or data rectangle.",
+                            "type": "number"
+                        },
+                        "axisColor": {
+                            "description": "Color of axis line.",
+                            "type": "string"
+                        },
+                        "grid": {
+                            "description": "A flag indicate if gridlines should be created in addition to ticks. If `grid` is unspecified, the default value is `true` for ROW and COL. For X and Y, the default value is `true` for quantitative and time fields and `false` otherwise.",
+                            "type": "boolean"
+                        },
+                        "gridColor": {
+                            "description": "Color of gridlines.",
+                            "type": "string"
+                        },
+                        "gridDash": {
+                            "description": "The offset (in pixels) into which to begin drawing with the grid dash array.",
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        },
+                        "gridOpacity": {
+                            "description": "The stroke opacity of grid (value between [0,1])",
+                            "type": "number"
+                        },
+                        "gridWidth": {
+                            "description": "The grid width, in pixels.",
+                            "type": "number"
+                        },
+                        "labels": {
+                            "description": "Enable or disable labels.",
+                            "type": "boolean"
+                        },
+                        "labelAlign": {
+                            "description": "Text alignment for the Label.",
+                            "type": "string"
+                        },
+                        "labelBaseline": {
+                            "description": "Text baseline for the label.",
+                            "type": "string"
+                        },
+                        "labelMaxLength": {
+                            "description": "Truncate labels that are too long.",
+                            "minimum": 1,
+                            "type": "number"
+                        },
+                        "shortTimeLabels": {
+                            "description": "Whether month and day names should be abbreviated.",
+                            "type": "boolean"
+                        },
+                        "subdivide": {
+                            "description": "If provided, sets the number of minor ticks between major ticks (the value 9 results in decimal subdivision). Only applicable for axes visualizing quantitative scales.",
+                            "type": "number"
+                        },
+                        "ticks": {
+                            "description": "A desired number of ticks, for axes visualizing quantitative scales. The resulting number may be different so that values are \"nice\" (multiples of 2, 5, 10) and lie within the underlying scale's range.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "tickColor": {
+                            "description": "The color of the axis's tick.",
+                            "type": "string"
+                        },
+                        "tickLabelColor": {
+                            "description": "The color of the tick label, can be in hex color code or regular color name.",
+                            "type": "string"
+                        },
+                        "tickLabelFont": {
+                            "description": "The font of the tick label.",
+                            "type": "string"
+                        },
+                        "tickLabelFontSize": {
+                            "description": "The font size of label, in pixels.",
+                            "type": "number"
+                        },
+                        "tickPadding": {
+                            "description": "The padding, in pixels, between ticks and text labels.",
+                            "type": "number"
+                        },
+                        "tickSize": {
+                            "description": "The size, in pixels, of major, minor and end ticks.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "tickSizeMajor": {
+                            "description": "The size, in pixels, of major ticks.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "tickSizeMinor": {
+                            "description": "The size, in pixels, of minor ticks.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "tickSizeEnd": {
+                            "description": "The size, in pixels, of end ticks.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "tickWidth": {
+                            "description": "The width, in pixels, of ticks.",
+                            "type": "number"
+                        },
+                        "titleColor": {
+                            "description": "Color of the title, can be in hex color code or regular color name.",
+                            "type": "string"
+                        },
+                        "titleFont": {
+                            "description": "Font of the title.",
+                            "type": "string"
+                        },
+                        "titleFontSize": {
+                            "description": "Size of the title.",
+                            "type": "number"
+                        },
+                        "titleFontWeight": {
+                            "description": "Weight of the title.",
+                            "type": "string"
+                        },
+                        "titleOffset": {
+                            "description": "A title offset value for the axis.",
+                            "type": "number"
+                        },
+                        "titleMaxLength": {
+                            "description": "Max length for axis title if the title is automatically generated from the field's description. By default, this is automatically based on cell size and characterWidth property.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "characterWidth": {
+                            "description": "Character width for automatically determining title max length.",
+                            "type": "number"
+                        },
+                        "properties": {
+                            "description": "Optional mark property definitions for custom axis styling."
+                        }
                     }
                 },
-                "axisWidth": {
-                    "description": "Width of the axis line",
-                    "type": "number"
-                },
-                "layer": {
-                    "description": "A string indicating if the axis (and any gridlines) should be placed above or below the data marks.",
-                    "type": "string"
-                },
-                "offset": {
-                    "description": "The offset, in pixels, by which to displace the axis from the edge of the enclosing group or data rectangle.",
-                    "type": "number"
-                },
-                "axisColor": {
-                    "description": "Color of axis line.",
-                    "type": "string"
-                },
-                "grid": {
-                    "description": "A flag indicate if gridlines should be created in addition to ticks. If `grid` is unspecified, the default value is `true` for ROW and COL. For X and Y, the default value is `true` for quantitative and time fields and `false` otherwise.",
-                    "type": "boolean"
-                },
-                "gridColor": {
-                    "description": "Color of gridlines.",
-                    "type": "string"
-                },
-                "gridDash": {
-                    "description": "The offset (in pixels) into which to begin drawing with the grid dash array.",
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                },
-                "gridOpacity": {
-                    "description": "The stroke opacity of grid (value between [0,1])",
-                    "type": "number"
-                },
-                "gridWidth": {
-                    "description": "The grid width, in pixels.",
-                    "type": "number"
-                },
-                "labels": {
-                    "description": "Enable or disable labels.",
-                    "type": "boolean"
-                },
-                "labelAlign": {
-                    "description": "Text alignment for the Label.",
-                    "type": "string"
-                },
-                "labelBaseline": {
-                    "description": "Text baseline for the label.",
-                    "type": "string"
-                },
-                "labelMaxLength": {
-                    "description": "Truncate labels that are too long.",
-                    "minimum": 1,
-                    "type": "number"
-                },
-                "shortTimeLabels": {
-                    "description": "Whether month and day names should be abbreviated.",
-                    "type": "boolean"
-                },
-                "subdivide": {
-                    "description": "If provided, sets the number of minor ticks between major ticks (the value 9 results in decimal subdivision). Only applicable for axes visualizing quantitative scales.",
-                    "type": "number"
-                },
-                "ticks": {
-                    "description": "A desired number of ticks, for axes visualizing quantitative scales. The resulting number may be different so that values are \"nice\" (multiples of 2, 5, 10) and lie within the underlying scale's range.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "tickColor": {
-                    "description": "The color of the axis's tick.",
-                    "type": "string"
-                },
-                "tickLabelColor": {
-                    "description": "The color of the tick label, can be in hex color code or regular color name.",
-                    "type": "string"
-                },
-                "tickLabelFont": {
-                    "description": "The font of the tick label.",
-                    "type": "string"
-                },
-                "tickLabelFontSize": {
-                    "description": "The font size of label, in pixels.",
-                    "type": "number"
-                },
-                "tickPadding": {
-                    "description": "The padding, in pixels, between ticks and text labels.",
-                    "type": "number"
-                },
-                "tickSize": {
-                    "description": "The size, in pixels, of major, minor and end ticks.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "tickSizeMajor": {
-                    "description": "The size, in pixels, of major ticks.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "tickSizeMinor": {
-                    "description": "The size, in pixels, of minor ticks.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "tickSizeEnd": {
-                    "description": "The size, in pixels, of end ticks.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "tickWidth": {
-                    "description": "The width, in pixels, of ticks.",
-                    "type": "number"
-                },
-                "titleColor": {
-                    "description": "Color of the title, can be in hex color code or regular color name.",
-                    "type": "string"
-                },
-                "titleFont": {
-                    "description": "Font of the title.",
-                    "type": "string"
-                },
-                "titleFontSize": {
-                    "description": "Size of the title.",
-                    "type": "number"
-                },
-                "titleFontWeight": {
-                    "description": "Weight of the title.",
-                    "type": "string"
-                },
-                "titleOffset": {
-                    "description": "A title offset value for the axis.",
-                    "type": "number"
-                },
-                "titleMaxLength": {
-                    "description": "Max length for axis title if the title is automatically generated from the field's description. By default, this is automatically based on cell size and characterWidth property.",
-                    "minimum": 0,
-                    "type": "number"
-                },
-                "characterWidth": {
-                    "description": "Character width for automatically determining title max length.",
-                    "type": "number"
-                },
-                "properties": {
-                    "description": "Optional mark property definitions for custom axis styling."
+                {
+                    "type": "null"
                 }
-            }
+            ]
         },
         "AxisOrient": {
             "type": "string",
@@ -420,6 +423,66 @@
                 "bottom"
             ]
         },
+        "DateTime": {
+            "description": "Object for defining datetime in Vega-Lite Filter.\n\nIf both month and quarter are provided, month has higher precedence.\n\n`day` cannot be combined with other date.\n\nWe accept string for month and day names.",
+            "type": "object",
+            "properties": {
+                "year": {
+                    "description": "Integer value representing the year.",
+                    "type": "number"
+                },
+                "quarter": {
+                    "description": "Integer value representing the quarter of the year (from 1-4).",
+                    "minimum": 1,
+                    "maximum": 4,
+                    "type": "number"
+                },
+                "month": {
+                    "description": "One of: (1) integer value representing the month from `1`-`12`. `1` represents January;  (2) case-insensitive month name (e.g., `\"January\"`);  (3) case-insensitive, 3-character short month name (e.g., `\"Jan\"`).",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "date": {
+                    "description": "Integer value representing the date from 1-31.",
+                    "minimum": 1,
+                    "maximum": 31,
+                    "type": "number"
+                },
+                "day": {
+                    "description": "Value representing the day of week.  This can be one of: (1) integer value -- `1` represents Monday; (2) case-insensitive day name (e.g., `\"Monday\"`);  (3) case-insensitive, 3-character short day name (e.g., `\"Mon\"`).   <br/> **Warning:** A DateTime definition object with `day`** should not be combined with `year`, `quarter`, `month`, or `date`.",
+                    "type": [
+                        "string",
+                        "number"
+                    ]
+                },
+                "hours": {
+                    "description": "Integer value representing the hour of day from 0-23.",
+                    "minimum": 0,
+                    "maximum": 23,
+                    "type": "number"
+                },
+                "minutes": {
+                    "description": "Integer value representing minute segment of a time from 0-59.",
+                    "minimum": 0,
+                    "maximum": 59,
+                    "type": "number"
+                },
+                "seconds": {
+                    "description": "Integer value representing second segment of a time from 0-59.",
+                    "minimum": 0,
+                    "maximum": 59,
+                    "type": "number"
+                },
+                "milliseconds": {
+                    "description": "Integer value representing millisecond segment of a time.",
+                    "minimum": 0,
+                    "maximum": 999,
+                    "type": "number"
+                }
+            }
+        },
         "Scale": {
             "type": "object",
             "properties": {
@@ -428,7 +491,13 @@
                 },
                 "domain": {
                     "description": "The domain of the scale, representing the set of data values. For quantitative data, this can take the form of a two-element array with minimum and maximum values. For ordinal/categorical data, this may be an array of valid input values.",
-                    "oneOf": [
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
                         {
                             "type": "array",
                             "items": {
@@ -438,16 +507,19 @@
                         {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "$ref": "#/definitions/DateTime"
                             }
                         }
                     ]
                 },
                 "range": {
                     "description": "The range of the scale, representing the set of visual values. For numeric values, the range can take the form of a two-element array with minimum and maximum values. For ordinal or quantized data, the range may by an array of desired output values, which are mapped to elements in the specified domain. For ordinal scales only, the range can be defined using a DataRef: the range values are then drawn dynamically from a backing data set.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         },
                         {
                             "type": "array",
@@ -456,10 +528,7 @@
                             }
                         },
                         {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     ]
                 },
@@ -469,12 +538,12 @@
                 },
                 "bandSize": {
                     "minimum": 0,
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/BandSize"
+                        },
+                        {
+                            "type": "number"
                         }
                     ]
                 },
@@ -488,12 +557,12 @@
                 },
                 "nice": {
                     "description": "If specified, modifies the scale domain to use a more human-friendly value range. If specified as a true boolean, modifies the scale domain to use a more human-friendly number range (e.g., 7 instead of 6.96). If specified as a string, modifies the scale domain to use a more human-friendly value range. For time and utc scale types only, the nice value should be a string indicating the desired time interval.",
-                    "oneOf": [
-                        {
-                            "type": "boolean"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/NiceTime"
+                        },
+                        {
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -543,6 +612,14 @@
                 "year"
             ]
         },
+        "SortOrder": {
+            "type": "string",
+            "enum": [
+                "ascending",
+                "descending",
+                "none"
+            ]
+        },
         "SortField": {
             "type": "object",
             "properties": {
@@ -588,14 +665,6 @@
                 "argmax"
             ]
         },
-        "SortOrder": {
-            "type": "string",
-            "enum": [
-                "ascending",
-                "descending",
-                "none"
-            ]
-        },
         "Type": {
             "type": "string",
             "enum": [
@@ -621,6 +690,7 @@
                 "yearmonthdatehours",
                 "yearmonthdatehoursminutes",
                 "yearmonthdatehoursminutesseconds",
+                "monthdate",
                 "hoursminutes",
                 "hoursminutesseconds",
                 "minutesseconds",
@@ -632,6 +702,7 @@
             ]
         },
         "Bin": {
+            "description": "Binning properties or boolean flag for determining whether to bin data or not.",
             "type": "object",
             "properties": {
                 "min": {
@@ -688,16 +759,10 @@
                 },
                 "value": {
                     "description": "A constant value in visual domain.",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "boolean"
-                        }
+                    "type": [
+                        "string",
+                        "number",
+                        "boolean"
                     ]
                 },
                 "timeUnit": {
@@ -706,13 +771,12 @@
                 },
                 "bin": {
                     "description": "Flag for binning a `quantitative` field, or a bin property object\n\nfor binning parameters.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "boolean"
+                            "$ref": "#/definitions/Bin"
                         },
                         {
-                            "$ref": "#/definitions/Bin",
-                            "description": "Binning properties or boolean flag for determining whether to bin data or not."
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -736,12 +800,12 @@
                     "$ref": "#/definitions/Scale"
                 },
                 "sort": {
-                    "oneOf": [
-                        {
-                            "$ref": "#/definitions/SortField"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/SortOrder"
+                        },
+                        {
+                            "$ref": "#/definitions/SortField"
                         }
                     ]
                 },
@@ -755,16 +819,10 @@
                 },
                 "value": {
                     "description": "A constant value in visual domain.",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "boolean"
-                        }
+                    "type": [
+                        "string",
+                        "number",
+                        "boolean"
                     ]
                 },
                 "timeUnit": {
@@ -773,13 +831,12 @@
                 },
                 "bin": {
                     "description": "Flag for binning a `quantitative` field, or a bin property object\n\nfor binning parameters.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "boolean"
+                            "$ref": "#/definitions/Bin"
                         },
                         {
-                            "$ref": "#/definitions/Bin",
-                            "description": "Binning properties or boolean flag for determining whether to bin data or not."
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -794,117 +851,143 @@
             }
         },
         "Legend": {
-            "type": "object",
-            "properties": {
-                "format": {
-                    "description": "An optional formatting pattern for legend labels. Vega uses D3\\'s format pattern.",
-                    "type": "string"
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "format": {
+                            "description": "An optional formatting pattern for legend labels. Vega uses D3\\'s format pattern.",
+                            "type": "string"
+                        },
+                        "title": {
+                            "description": "A title for the legend. (Shows field name and its function by default.)",
+                            "type": "string"
+                        },
+                        "values": {
+                            "description": "Explicitly set the visible legend values.",
+                            "anyOf": [
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/DateTime"
+                                    }
+                                }
+                            ]
+                        },
+                        "orient": {
+                            "description": "The orientation of the legend. One of \"left\" or \"right\". This determines how the legend is positioned within the scene. The default is \"right\".",
+                            "type": "string"
+                        },
+                        "offset": {
+                            "description": "The offset, in pixels, by which to displace the legend from the edge of the enclosing group or data rectangle.",
+                            "type": "number"
+                        },
+                        "padding": {
+                            "description": "The padding, in pixels, between the legend and axis.",
+                            "type": "number"
+                        },
+                        "margin": {
+                            "description": "The margin around the legend, in pixels",
+                            "type": "number"
+                        },
+                        "gradientStrokeColor": {
+                            "description": "The color of the gradient stroke, can be in hex color code or regular color name.",
+                            "type": "string"
+                        },
+                        "gradientStrokeWidth": {
+                            "description": "The width of the gradient stroke, in pixels.",
+                            "type": "number"
+                        },
+                        "gradientHeight": {
+                            "description": "The height of the gradient, in pixels.",
+                            "type": "number"
+                        },
+                        "gradientWidth": {
+                            "description": "The width of the gradient, in pixels.",
+                            "type": "number"
+                        },
+                        "labelAlign": {
+                            "description": "The alignment of the legend label, can be left, middle or right.",
+                            "type": "string"
+                        },
+                        "labelBaseline": {
+                            "description": "The position of the baseline of legend label, can be top, middle or bottom.",
+                            "type": "string"
+                        },
+                        "labelColor": {
+                            "description": "The color of the legend label, can be in hex color code or regular color name.",
+                            "type": "string"
+                        },
+                        "labelFont": {
+                            "description": "The font of the legend label.",
+                            "type": "string"
+                        },
+                        "labelFontSize": {
+                            "description": "The font size of legend label.",
+                            "type": "number"
+                        },
+                        "labelOffset": {
+                            "description": "The offset of the legend label.",
+                            "type": "number"
+                        },
+                        "shortTimeLabels": {
+                            "description": "Whether month names and weekday names should be abbreviated.",
+                            "type": "boolean"
+                        },
+                        "symbolColor": {
+                            "description": "The color of the legend symbol,",
+                            "type": "string"
+                        },
+                        "symbolShape": {
+                            "description": "The shape of the legend symbol, can be the 'circle', 'square', 'cross', 'diamond',\n\n'triangle-up', 'triangle-down', or else a custom SVG path string.",
+                            "type": "string"
+                        },
+                        "symbolSize": {
+                            "description": "The size of the legend symbol, in pixels.",
+                            "type": "number"
+                        },
+                        "symbolStrokeWidth": {
+                            "description": "The width of the symbol's stroke.",
+                            "minimum": 0,
+                            "type": "number"
+                        },
+                        "titleColor": {
+                            "description": "Optional mark property definitions for custom legend styling.\n\nThe color of the legend title, can be in hex color code or regular color name.",
+                            "type": "string"
+                        },
+                        "titleFont": {
+                            "description": "The font of the legend title.",
+                            "type": "string"
+                        },
+                        "titleFontSize": {
+                            "description": "The font size of the legend title.",
+                            "type": "number"
+                        },
+                        "titleFontWeight": {
+                            "description": "The font weight of the legend title.",
+                            "type": "string"
+                        },
+                        "properties": {
+                            "description": "Optional mark property definitions for custom legend styling."
+                        }
+                    }
                 },
-                "title": {
-                    "description": "A title for the legend. (Shows field name and its function by default.)",
-                    "type": "string"
-                },
-                "values": {
-                    "description": "Explicitly set the visible legend values.",
-                    "type": "array",
-                    "items": {}
-                },
-                "orient": {
-                    "description": "The orientation of the legend. One of \"left\" or \"right\". This determines how the legend is positioned within the scene. The default is \"right\".",
-                    "type": "string"
-                },
-                "offset": {
-                    "description": "The offset, in pixels, by which to displace the legend from the edge of the enclosing group or data rectangle.",
-                    "type": "number"
-                },
-                "padding": {
-                    "description": "The padding, in pixels, between the lengend and axis.",
-                    "type": "number"
-                },
-                "margin": {
-                    "description": "The margin around the legend, in pixels",
-                    "type": "number"
-                },
-                "gradientStrokeColor": {
-                    "description": "The color of the gradient stroke, can be in hex color code or regular color name.",
-                    "type": "string"
-                },
-                "gradientStrokeWidth": {
-                    "description": "The width of the gradient stroke, in pixels.",
-                    "type": "number"
-                },
-                "gradientHeight": {
-                    "description": "The height of the gradient, in pixels.",
-                    "type": "number"
-                },
-                "gradientWidth": {
-                    "description": "The width of the gradient, in pixels.",
-                    "type": "number"
-                },
-                "labelAlign": {
-                    "description": "The alignment of the legend label, can be left, middle or right.",
-                    "type": "string"
-                },
-                "labelBaseline": {
-                    "description": "The position of the baseline of legend label, can be top, middle or bottom.",
-                    "type": "string"
-                },
-                "labelColor": {
-                    "description": "The color of the legend label, can be in hex color code or regular color name.",
-                    "type": "string"
-                },
-                "labelFont": {
-                    "description": "The font of the lengend label.",
-                    "type": "string"
-                },
-                "labelFontSize": {
-                    "description": "The font size of lengend lable.",
-                    "type": "number"
-                },
-                "labelOffset": {
-                    "description": "The offset of the legend label.",
-                    "type": "number"
-                },
-                "shortTimeLabels": {
-                    "description": "Whether month names and weekday names should be abbreviated.",
-                    "type": "boolean"
-                },
-                "symbolColor": {
-                    "description": "The color of the legend symbol,",
-                    "type": "string"
-                },
-                "symbolShape": {
-                    "description": "The shape of the legend symbol, can be the 'circle', 'square', 'cross', 'diamond',\n\n'triangle-up', 'triangle-down', or else a custom SVG path string.",
-                    "type": "string"
-                },
-                "symbolSize": {
-                    "description": "The size of the lengend symbol, in pixels.",
-                    "type": "number"
-                },
-                "symbolStrokeWidth": {
-                    "description": "The width of the symbol's stroke.",
-                    "type": "number"
-                },
-                "titleColor": {
-                    "description": "Optional mark property definitions for custom legend styling.\n\nThe color of the legend title, can be in hex color code or regular color name.",
-                    "type": "string"
-                },
-                "titleFont": {
-                    "description": "The font of the legend title.",
-                    "type": "string"
-                },
-                "titleFontSize": {
-                    "description": "The font size of the legend title.",
-                    "type": "number"
-                },
-                "titleFontWeight": {
-                    "description": "The font weight of the legend title.",
-                    "type": "string"
-                },
-                "properties": {
-                    "description": "Optional mark property definitions for custom legend styling."
+                {
+                    "type": "null"
                 }
-            }
+            ]
         },
         "OrderChannelDef": {
             "type": "object",
@@ -922,16 +1005,10 @@
                 },
                 "value": {
                     "description": "A constant value in visual domain.",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "boolean"
-                        }
+                    "type": [
+                        "string",
+                        "number",
+                        "boolean"
                     ]
                 },
                 "timeUnit": {
@@ -940,13 +1017,12 @@
                 },
                 "bin": {
                     "description": "Flag for binning a `quantitative` field, or a bin property object\n\nfor binning parameters.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "boolean"
+                            "$ref": "#/definitions/Bin"
                         },
                         {
-                            "$ref": "#/definitions/Bin",
-                            "description": "Binning properties or boolean flag for determining whether to bin data or not."
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -985,6 +1061,9 @@
                     "$ref": "#/definitions/DataFormatType",
                     "description": "Type of input data: `\"json\"`, `\"csv\"`, `\"tsv\"`.\n\nThe default format type is determined by the extension of the file url.\n\nIf no extension is detected, `\"json\"` will be used by default."
                 },
+                "parse": {
+                    "description": "A collection of parsing instructions can be used to define the data types of string-valued attributes in the JSON file. Each instruction is a name-value pair, where the name is the name of the attribute, and the value is the desired data type (one of `\"number\"`, `\"boolean\"` or `\"date\"`). For example, `\"parse\": {\"modified_on\":\"date\"}` ensures that the `modified_on` value in each row of the input data is parsed as a Date value. (See Datalib's [`dl.read.types` method](https://github.com/vega/datalib/wiki/Import#dl_read_types) for more information.)"
+                },
                 "property": {
                     "description": "JSON only) The JSON property containing the desired data.\n\nThis parameter can be used when the loaded JSON file may have surrounding structure or meta-data.\n\nFor example `\"property\": \"values.features\"` is equivalent to retrieving `json.values.features`\n\nfrom the loaded JSON object.",
                     "type": "string"
@@ -994,7 +1073,7 @@
                     "type": "string"
                 },
                 "mesh": {
-                    "description": "The name of the TopoJSON object set to convert to a mesh.\n\nSimilar to the `feature` option, `mesh` extracts a named TopoJSON object set.\n\nUnlike the `feature` option, the corresponding geo data is returned as a single, unified mesh instance, not as inidividual GeoJSON features.\n\nExtracting a mesh is useful for more efficiently drawing borders or other geographic elements that you do not need to associate with specific regions such as individual countries, states or counties.",
+                    "description": "The name of the TopoJSON object set to convert to a mesh.\n\nSimilar to the `feature` option, `mesh` extracts a named TopoJSON object set.\n\nUnlike the `feature` option, the corresponding geo data is returned as a single, unified mesh instance, not as individual GeoJSON features.\n\nExtracting a mesh is useful for more efficiently drawing borders or other geographic elements that you do not need to associate with specific regions such as individual countries, states or counties.",
                     "type": "string"
                 }
             }
@@ -1013,10 +1092,7 @@
             "properties": {
                 "filter": {
                     "description": "A string containing the filter Vega expression. Use `datum` to refer to the current data object.",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/EqualFilter"
                         },
@@ -1029,10 +1105,7 @@
                         {
                             "type": "array",
                             "items": {
-                                "oneOf": [
-                                    {
-                                        "type": "string"
-                                    },
+                                "anyOf": [
                                     {
                                         "$ref": "#/definitions/EqualFilter"
                                     },
@@ -1041,9 +1114,15 @@
                                     },
                                     {
                                         "$ref": "#/definitions/OneOfFilter"
+                                    },
+                                    {
+                                        "type": "string"
                                     }
                                 ]
                             }
+                        },
+                        {
+                            "type": "string"
                         }
                     ]
                 },
@@ -1055,8 +1134,7 @@
                     "description": "Calculate new field(s) using the provided expresssion(s). Calculation are applied before filter.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Formula",
-                        "description": "Formula object for calculate."
+                        "$ref": "#/definitions/Formula"
                     }
                 }
             }
@@ -1074,19 +1152,16 @@
                 },
                 "equal": {
                     "description": "Value that the field should be equal to.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "type": "string"
+                            "$ref": "#/definitions/DateTime"
                         },
                         {
-                            "type": "number"
-                        },
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "$ref": "#/definitions/DateTime",
-                            "description": "Object for defining datetime in Vega-Lite Filter.\n\nIf both month and quarter are provided, month has higher precedence.\n\n`day` cannot be combined with other date.\n\nWe accept string for month and day names."
+                            "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                            ]
                         }
                     ]
                 }
@@ -1095,61 +1170,6 @@
                 "field",
                 "equal"
             ]
-        },
-        "DateTime": {
-            "type": "object",
-            "properties": {
-                "year": {
-                    "description": "Integer value representing the year.",
-                    "type": "number"
-                },
-                "quarter": {
-                    "description": "Integer value representing the quarter of the year (from 1-4).",
-                    "type": "number"
-                },
-                "month": {
-                    "description": "One of: (1) integer value representing the month from `1`-`12`. `1` represents January;  (2) case-insensitive month name (e.g., `\"January\"`);  (3) case-insensitive, 3-character short month name (e.g., `\"Jan\"`).",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
-                },
-                "date": {
-                    "description": "Integer value representing the date from 1-31.",
-                    "type": "number"
-                },
-                "day": {
-                    "description": "Value representing the day of week.  This can be one of: (1) integer value -- `1` represents Monday; (2) case-insensitive day name (e.g., `\"Monday\"`);  (3) case-insensitive, 3-character short day name (e.g., `\"Mon\"`).   <br/> **Warning:** A DateTime definition object with `day`** should not be combined with `year`, `quarter`, `month`, or `date`.",
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "type": "string"
-                        }
-                    ]
-                },
-                "hours": {
-                    "description": "Integer value representing the hour of day from 0-23.",
-                    "type": "number"
-                },
-                "minutes": {
-                    "description": "Integer value representing minute segment of a time from 0-59.",
-                    "type": "number"
-                },
-                "seconds": {
-                    "description": "Integer value representing second segment of a time from 0-59.",
-                    "type": "number"
-                },
-                "milliseconds": {
-                    "description": "Integer value representing millisecond segment of a time.",
-                    "type": "number"
-                }
-            }
         },
         "RangeFilter": {
             "type": "object",
@@ -1168,13 +1188,12 @@
                     "minItems": 2,
                     "type": "array",
                     "items": {
-                        "oneOf": [
+                        "anyOf": [
                             {
-                                "type": "number"
+                                "$ref": "#/definitions/DateTime"
                             },
                             {
-                                "$ref": "#/definitions/DateTime",
-                                "description": "Object for defining datetime in Vega-Lite Filter.\n\nIf both month and quarter are provided, month has higher precedence.\n\n`day` cannot be combined with other date.\n\nWe accept string for month and day names."
+                                "type": "number"
                             }
                         ]
                     }
@@ -1200,19 +1219,16 @@
                     "description": "A set of values that the `field`'s value should be a member of,\n\nfor a data item included in the filtered data.",
                     "type": "array",
                     "items": {
-                        "oneOf": [
+                        "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/definitions/DateTime"
                             },
                             {
-                                "type": "number"
-                            },
-                            {
-                                "type": "boolean"
-                            },
-                            {
-                                "$ref": "#/definitions/DateTime",
-                                "description": "Object for defining datetime in Vega-Lite Filter.\n\nIf both month and quarter are provided, month has higher precedence.\n\n`day` cannot be combined with other date.\n\nWe accept string for month and day names."
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                ]
                             }
                         ]
                     }
@@ -1224,6 +1240,7 @@
             ]
         },
         "Formula": {
+            "description": "Formula object for calculate.",
             "type": "object",
             "properties": {
                 "field": {
@@ -1424,7 +1441,7 @@
                 },
                 "shape": {
                     "description": "The symbol shape to use. One of circle (default), square, cross, diamond, triangle-up, or triangle-down, or a custom SVG path.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/Shape"
                         },
@@ -1626,12 +1643,12 @@
                 "bandSize": {
                     "description": "Default band size for (1) `y` ordinal scale,\n\nand (2) `x` ordinal scale when the mark is not `text`.",
                     "minimum": 0,
-                    "oneOf": [
-                        {
-                            "type": "number"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/BandSize"
+                        },
+                        {
+                            "type": "number"
                         }
                     ]
                 },
@@ -1652,43 +1669,43 @@
                 },
                 "nominalColorRange": {
                     "description": "Default range for nominal color scale",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
+                    "anyOf": [
                         {
                             "type": "array",
                             "items": {
                                 "type": "string"
                             }
+                        },
+                        {
+                            "type": "string"
                         }
                     ]
                 },
                 "sequentialColorRange": {
                     "description": "Default range for ordinal / continuous color scale",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
+                    "anyOf": [
                         {
                             "type": "array",
                             "items": {
                                 "type": "string"
                             }
+                        },
+                        {
+                            "type": "string"
                         }
                     ]
                 },
                 "shapeRange": {
                     "description": "Default range for shape",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
+                    "anyOf": [
                         {
                             "type": "array",
                             "items": {
                                 "type": "string"
                             }
+                        },
+                        {
+                            "type": "string"
                         }
                     ]
                 },
@@ -1895,7 +1912,7 @@
                     "type": "number"
                 },
                 "padding": {
-                    "description": "The padding, in pixels, between the lengend and axis.",
+                    "description": "The padding, in pixels, between the legend and axis.",
                     "type": "number"
                 },
                 "margin": {
@@ -1931,11 +1948,11 @@
                     "type": "string"
                 },
                 "labelFont": {
-                    "description": "The font of the lengend label.",
+                    "description": "The font of the legend label.",
                     "type": "string"
                 },
                 "labelFontSize": {
-                    "description": "The font size of lengend lable.",
+                    "description": "The font size of legend label.",
                     "type": "number"
                 },
                 "labelOffset": {
@@ -1955,11 +1972,12 @@
                     "type": "string"
                 },
                 "symbolSize": {
-                    "description": "The size of the lengend symbol, in pixels.",
+                    "description": "The size of the legend symbol, in pixels.",
                     "type": "number"
                 },
                 "symbolStrokeWidth": {
                     "description": "The width of the symbol's stroke.",
+                    "minimum": 0,
                     "type": "number"
                 },
                 "titleColor": {
@@ -2037,12 +2055,12 @@
                     "$ref": "#/definitions/Facet"
                 },
                 "spec": {
-                    "oneOf": [
-                        {
-                            "$ref": "#/definitions/LayerSpec"
-                        },
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/UnitSpec"
+                        },
+                        {
+                            "$ref": "#/definitions/LayerSpec"
                         }
                     ]
                 },
@@ -2082,47 +2100,6 @@
                     "$ref": "#/definitions/PositionChannelDef"
                 }
             }
-        },
-        "LayerSpec": {
-            "type": "object",
-            "properties": {
-                "width": {
-                    "type": "number"
-                },
-                "height": {
-                    "type": "number"
-                },
-                "layers": {
-                    "description": "Unit specs that will be layered.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/UnitSpec"
-                    }
-                },
-                "name": {
-                    "description": "Name of the visualization for later reference.",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "An optional description of this mark for commenting purpose.\n\nThis property has no effect on the output visualization.",
-                    "type": "string"
-                },
-                "data": {
-                    "$ref": "#/definitions/Data",
-                    "description": "An object describing the data source"
-                },
-                "transform": {
-                    "$ref": "#/definitions/Transform",
-                    "description": "An object describing filter and new field calculation."
-                },
-                "config": {
-                    "$ref": "#/definitions/Config",
-                    "description": "Configuration object"
-                }
-            },
-            "required": [
-                "layers"
-            ]
         },
         "UnitSpec": {
             "type": "object",
@@ -2203,16 +2180,14 @@
                 },
                 "detail": {
                     "description": "Additional levels of detail for grouping data in aggregate views and\n\nin line and area marks without mapping data to a specific visual channel.",
-                    "oneOf": [
+                    "anyOf": [
                         {
-                            "$ref": "#/definitions/FieldDef",
-                            "description": "Interface for any kind of FieldDef;\n\nFor simplicity, we do not declare multiple interfaces of FieldDef like\n\nwe do for JSON schema."
+                            "$ref": "#/definitions/FieldDef"
                         },
                         {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/FieldDef",
-                                "description": "Interface for any kind of FieldDef;\n\nFor simplicity, we do not declare multiple interfaces of FieldDef like\n\nwe do for JSON schema."
+                                "$ref": "#/definitions/FieldDef"
                             }
                         }
                     ]
@@ -2226,7 +2201,7 @@
                 },
                 "path": {
                     "description": "Order of data points in line marks.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/OrderChannelDef"
                         },
@@ -2240,7 +2215,7 @@
                 },
                 "order": {
                     "description": "Layer order for non-stacked marks, or stack order for stacked marks.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "$ref": "#/definitions/OrderChannelDef"
                         },
@@ -2253,6 +2228,47 @@
                     ]
                 }
             }
+        },
+        "LayerSpec": {
+            "type": "object",
+            "properties": {
+                "width": {
+                    "type": "number"
+                },
+                "height": {
+                    "type": "number"
+                },
+                "layers": {
+                    "description": "Unit specs that will be layered.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/UnitSpec"
+                    }
+                },
+                "name": {
+                    "description": "Name of the visualization for later reference.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "An optional description of this mark for commenting purpose.\n\nThis property has no effect on the output visualization.",
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/Data",
+                    "description": "An object describing the data source"
+                },
+                "transform": {
+                    "$ref": "#/definitions/Transform",
+                    "description": "An object describing filter and new field calculation."
+                },
+                "config": {
+                    "$ref": "#/definitions/Config",
+                    "description": "Configuration object"
+                }
+            },
+            "required": [
+                "layers"
+            ]
         }
     },
     "$schema": "http://json-schema.org/draft-04/schema#"
