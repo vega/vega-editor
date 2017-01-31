@@ -41,10 +41,10 @@
     "d3-geo-projection": "^0.2.15",
     "topojson": "^1.6.24",
     "vega-datasets": "vega/vega-datasets#gh-pages",
-    "vega": "^2",
+    "vega": "3.0.0-beta.20",
     "vega-embed": "latest",
-    "vega-lite": "latest",
-    "compassql": "~0.4.0"
+    "vega-lite": "2.0.0-alpha.1",
+    "compassql": "0.8.0"
   },
   "devDependencies": {
     "chokidar": "^1.2.0"
