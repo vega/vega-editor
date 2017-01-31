@@ -339,6 +339,9 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
     .append('div')
     .attr('class', 'vislistgroup');
 
+  // New D3 v4 merge step!
+  groupSelections = groupsEnter.merge(groupSelections);
+
   groupSelections.classed('collapsed', function(childGrp) {
       return !childGrp.expand;
     });
@@ -392,8 +395,6 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupsEnter.append('div')
     .attr('class', 'grouplist');
-
-
 
   groupSelections.each(ved.cql.groupRenderer(indexPrefix));
 };
