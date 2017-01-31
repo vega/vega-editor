@@ -195,3 +195,63 @@
 .vega-editor.vega-lite .hide-vl {
   display: none;
 }
+
+.vega-editor.compassql .hide-cql {
+  display: none;
+}
+
+.vislist {
+  overflow: scroll;
+  background: #ddd;
+}
+
+.vislist .vislistgroup {
+  margin: 2px;
+  padding: 2px;
+  background-color: rgba(255,255,255,0.5);
+}
+
+/* only the top-level vislistgroup gets the scroll */
+.vislist > .vislistgroup {
+  overflow-x: scroll;
+}
+
+.vislist .vislistgroup.collapsed .groupheader .groupname{
+  display: none;
+}
+
+.vislist .vislistgroup .groupexpander {
+  color: steelblue;
+  cursor: pointer;
+}
+
+.vislist .vislistgroup .grouplist {
+  display: flex;
+  margin-top: 2px;
+  overflow-x: scroll;
+}
+
+.vislist .vislistitem {
+  padding: 4px;
+  background-color: white;
+  border: 1px dashed #ccc;
+  margin-right: 2px;
+  max-width: 600px;
+  min-width: 250px;
+  max-height: 400px;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.vislist .itemname {
+  font-size: 10px
+}
+
+.vislist .vega-actions {
+  text-align: center;
+}
+
+.vislist .vega-actions a{
+  font-size: 10px;
+  margin-right: 4px;
+}

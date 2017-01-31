@@ -1,10 +1,10 @@
 'use strict';
 
-/*global location, window, d3, vl, vega, localStorage, document,
-alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
+/*global location, window, d3, vl, vega, cql, localStorage, document, alert, console, VG_SPECS, VL_SPECS, CQL_SPECS, ace, JSON3*/
 
 var VEGA = 'vega';
 var VEGA_LITE = 'vega-lite';
+var COMPASSQL = 'compassql';
 
 var ved = {
   version: '1.2.0',
@@ -12,7 +12,8 @@ var ved = {
   renderType: 'canvas',
   editor: {
     vega: null,
-    'vega-lite': null
+    'vega-lite': null,
+    compassql: null
   },
   currentMode: null,
   vgHidden: true  // vega editor hidden in vl mode
@@ -61,6 +62,8 @@ ved.mode = function() {
     });
 
     ace.attr('class', 'ace_content disabled');
+  } else if (ved.currentMode === COMPASSQL) {
+    // DO NOTHING
   } else {
     throw new Error('Unknown mode ' + ved.currentMode);
   }
@@ -82,6 +85,7 @@ ved.switchToVega = function() {
 
 // Changes visibility of vega editor in vl mode
 ved.editorVisibility = function() {
+  // FIXME
   var $d3 = ved.$d3,
       vgs = $d3.select('.vg-spec'),
       vls = $d3.select('.vl-spec'),
@@ -91,6 +95,8 @@ ved.editorVisibility = function() {
     vgs.style('display', 'none');
     vls.style('flex', '1 1 auto');
     toggle.attr('class', 'click_toggle_vega up');
+  } else if (ved.currentMode === COMPASSQL) {
+    vgs.style('display', 'none');
   } else {
     vgs.style('display', 'block');
     ved.resizeVlEditor();
@@ -105,7 +111,7 @@ ved.select = function(spec) {
       desc = $d3.select('.spec_desc'),
       editor = ved.editor[mode],
       sel = ved.getSelect(),
-      parse = mode === VEGA ? ved.parseVg : ved.parseVl;
+      parse = mode === VEGA ? ved.parseVg : mode === VEGA_LITE ? ved.parseVl : ved.parseCql;
 
   if (spec) {
     editor.setValue(spec);
@@ -139,12 +145,19 @@ ved.select = function(spec) {
     ved.resize();
   } else if (mode === VEGA_LITE) {
     ved.resizeVlEditor();
+  } else if (mode === COMPASSQL) {
+    ved.resize();
   }
 };
 
 ved.uri = function(entry) {
+  var suffix = (
+    ved.currentMode === VEGA_LITE ? '.vl' :
+    ved.currentMode === VEGA ? '.vg' :
+    '') + '.json';
+
   return ved.path + 'spec/' + ved.currentMode +
-    '/' + entry.name + (ved.currentMode === VEGA_LITE ? '.vl' : '.vg') + '.json';
+    '/' + entry.name + suffix;
 };
 
 ved.renderer = function() {
@@ -228,13 +241,13 @@ ved.parseVg = function(callback) {
   }
 
   if (ved.getSelect().selectedIndex === 0 && ved.currentMode === VEGA) {
-    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method. 
+    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method.
     localStorage.setItem('vega-spec', value);
   }
 
   ved.resetView();
 
-  const runtime = vega.parse(vegaSpec);
+  var runtime = vega.parse(vegaSpec);
   ved.view = new vega.View(runtime, {
     loader: vega.loader({baseURL: ved.path})
   });
@@ -242,6 +255,300 @@ ved.parseVg = function(callback) {
     .initialize(document.querySelector('.vis'))
     .renderer(ved.renderType)
     .run();
+};
+
+ved.cql = { // namespace for CompassQL
+  dataUrl: null,
+  query: null,
+  NUM_EXPAND: 2,
+  views: {}
+};
+
+/**
+ * Initialize schema and stats for CompassQL
+ */
+ved.cql.init = function(data) {
+  ved.cql.schema = cql.schema.Schema.build(data);
+};
+
+function getRankingSummaryText(orderBy, specM) {
+  if (!Array.isArray(orderBy)) {
+    orderBy = [orderBy];
+  }
+
+  return orderBy.map(function(o) {
+    var score = specM.getRankingScore(o);
+    if (!score) {
+      return '';
+    }
+    return '** ' + o + '=' + score.score + ' **\n' +
+      score.features.map(function(feature) {
+        return feature.score + ' : ' +feature.type + '.' + feature.feature;
+      }).join(',\n');
+  }).join('\n\n');
+}
+
+/**
+* Recursively detach event listeners for all views in a group
+* So the event signals can be garbage-collected when a group exits
+*/
+function detachViewsInGroup(item) {
+  if (item instanceof cql.model.SpecQueryModelGroup) { // it's a group
+    item.items.forEach(function(childItem) {
+      detachViewsInGroup(childItem);
+    });
+  }
+  else { // it's a SpecQueryModel
+    detachView(item);
+  }
+}
+
+/**
+ * Detach event listeners for a single SpecQueryModel
+ * So the event signals can be garbage-collected when an item exits
+ */
+function detachView(model) {
+  var key = JSON.stringify(model.toSpec());
+    if (ved.cql.views[key]) {
+      ved.cql.views[key].destroy();
+      delete ved.cql.views[key];
+    }
+}
+
+
+ved.cql.renderGroups = function(sel, group, indexPrefix) {
+  // select all children of sel
+  var groupSelections = sel.selectAll(function() { return this.childNodes; })
+    .data(
+      // if not expand, only show the top item
+      group.expand ? group.items : [group.items[0]],
+      function (item) {
+        return item.name || // group
+          JSON.stringify(item.toSpec());    // model
+      }
+    );
+
+  // unregister event listeners for exiting groups
+  groupSelections.exit().each(function(group) {
+    detachViewsInGroup(group);
+  });
+
+  groupSelections.exit().remove();
+
+  var groupsEnter = groupSelections.enter()
+    .append('div')
+    .attr('class', 'vislistgroup');
+
+  groupSelections.classed('collapsed', function(childGrp) {
+      return !childGrp.expand;
+    });
+
+  var headersEnter = groupsEnter.append('span')
+    .attr('class', 'groupheader')
+
+  groupSelections.select('span.groupheader')
+    .attr('title', function(childGrp) {
+      var topItem = childGrp.getTopSpecQueryModel();
+      var orderGroupBy = group.orderGroupBy;
+      if (orderGroupBy) {
+        return getRankingSummaryText(orderGroupBy, topItem);
+      }
+      return null;
+    });
+
+  headersEnter.append('span')
+    .attr('class', 'grouptype');
+
+  groupSelections.select('span.grouptype')
+    .text(cql.query.groupBy.toString(group.groupBy) +': ');
+
+  headersEnter.append('span')
+    .attr('class', 'groupname');
+
+  groupSelections.select('span.groupname')
+    .text(function(childGrp) {
+      return childGrp.name;
+    });
+
+  headersEnter.append('span')
+    .attr('class', 'groupexpander')
+
+  groupSelections.select('span.groupexpander')
+    .text(function(childGrp) {
+      return childGrp.items.length <= 1 ? '' : childGrp.expand ? ' [-] ' : ' [+] ';
+    })
+    .on('click', function(childGrp, gid) {
+      childGrp.expand = !childGrp.expand;
+      var groupElem = this.parentNode  // .groupheader
+                          .parentNode; // .vislistgroup
+
+      ved.cql.groupRenderer(indexPrefix).call(groupElem, childGrp, gid);
+
+      d3.select(groupElem).select('.groupexpander').text(
+        childGrp.items.length <= 1 ? '' :childGrp.expand ? ' [-] ' : ' [+] '
+      );
+      d3.select(groupElem).classed('collapsed', !childGrp.expand);
+    });
+
+  groupsEnter.append('div')
+    .attr('class', 'grouplist');
+
+
+
+  groupSelections.each(ved.cql.groupRenderer(indexPrefix));
+};
+
+ved.cql.groupRenderer = function(indexPrefix) {
+  return function(group, gid) {
+    var sel = d3.select(this).select('.grouplist');
+
+    if (!group || group.items.length === 0) {
+      sel.selectAll(function() { return this.childNodes; })
+        .data([])
+        .exit()
+        .each(function(model) {
+          detachViewsInGroup(model);
+        })
+        .remove();
+
+      return;
+    }
+
+    // render child item based on type
+    if (group.items[0].items) { // SpecQueryModelGroup
+      ved.cql.renderGroups(sel, group, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    } else { // SpecQueryModel
+      ved.cql.renderItems(sel, group, (indexPrefix ? indexPrefix + '-' : '') + gid);
+    }
+  };
+};
+
+ved.cql.renderItems = function(sel, group, indexPrefix) {
+  var selections = sel.selectAll(function() { return this.childNodes; })
+      .data(
+        // if not expand, only show the top item
+        group.expand ? group.items : [group.items[0]],
+        function (item) {
+          return item.name || // group
+            JSON.stringify(item.toSpec());    // model
+        }
+      );
+
+  // unregister signals for exiting views
+  selections.exit().each(function(model) {
+    detachViewsInGroup(model);
+  });
+
+  selections.exit().remove();
+
+  var enter = selections.enter()
+      .append('div')
+      .attr('class', 'vislistitem');
+
+  enter.append('div')
+    .attr('class', 'itemname')
+    .text(function(d) {
+      return d.toShorthand();
+    });
+
+  // set title to score (need to reset every time
+  // since the same spec might have different score)
+  selections.select('div.itemname')
+    .attr('title', function(d) {
+      var orderBy = ved.cql.query.orderBy;
+      return getRankingSummaryText(orderBy, d);
+    });
+
+  enter.append('div')
+    .attr('id', function(_, index) { return 'vis-' + indexPrefix + '-' + index; })
+    .each(function(model, index) {
+      var vlSpec = model.toSpec();
+      var id = '#vis-' + indexPrefix + '-' + index;
+      var vlOutput = vl.compile(vlSpec);
+      var vegaSpec = vlOutput.spec;
+
+      var key = JSON.stringify(vlSpec);
+
+      var runtime = vega.parse(vegaSpec);
+      var view = ved.cql.views[key] = new vega.View(runtime, {
+        loader: vega.loader({baseURL: ved.path})
+      });
+      view.logLevel(vega.Info)
+        .initialize(document.querySelector(id))
+        .renderer(ved.renderType)
+        .run();
+    });
+};
+
+ved.cql.generate = function(query) {
+  var startTime = Date.now();
+  var rootGroup = cql.query(query, ved.cql.schema).result;
+  var endTime = Date.now();
+  console.log('Query time:', (endTime - startTime), 'milliseconds');
+
+  ved.cql.query = query; // storing for later reference
+  console.log('CompassQL', rootGroup.items);
+
+  rootGroup.expand = true;
+  rootGroup.items.forEach(function(answer, index) {
+    answer.expand = index < ved.cql.NUM_EXPAND;
+  });
+
+  d3.select('.vislist').datum(rootGroup)
+    .each(ved.cql.groupRenderer(''));
+};
+
+ved.parseCql = function(callback) {
+  if (!callback) {
+    callback = function(err) {
+      if (err) {
+        // FIXME is this the right thing to do for parseCql
+        if (ved.view) ved.view.destroy();
+        console.error(err);
+      }
+    };
+  }
+
+  var query;
+  var value = ved.editor[COMPASSQL].getValue();
+
+  if (!value) {
+    localStorage.removeItem('compassql-spec');
+    return;
+  }
+
+  try {
+    query = JSON.parse(value);
+  } catch (e) {
+    return callback(e);
+  }
+
+  if (ved.getSelect().selectedIndex === 0) {
+    localStorage.setItem('compassql-spec', value);
+  }
+
+  var data = query.spec.data;
+  if (data) {
+    if (data.url) {
+      if (data.url !== ved.cql.dataUrl) {
+        ved.cql.dataUrl = data.url;
+        d3.json('app/' + data.url, function(err, data) {
+          ved.cql.init(data);
+          ved.cql.generate(query);
+        });
+      } else {
+        // no need to recalculate the stats
+        ved.cql.generate(query);
+      }
+    } else if (data.values) {
+      ved.cql.dataUrl = null;
+      ved.cql.init(data);
+      ved.cql.generate(query);
+    }
+  } else {
+    console.error('no data specified');
+    return;
+  }
 };
 
 ved.resetView = function() {
@@ -254,6 +561,7 @@ ved.resetView = function() {
 ved.resize = function(event) {
   ved.editor[VEGA].resize();
   ved.editor[VEGA_LITE].resize();
+  ved.editor[COMPASSQL].resize();
 };
 
 ved.resizeVlEditor = function() {
@@ -373,6 +681,20 @@ ved.init = function(el, dir) {
       .attr('label', function(d) { return d.title; })
       .text(function(d) { return d.name; });
 
+    // CompassQL specification drop-down menu
+    var vlSel = el.select('.sel_compassql_spec');
+    vlSel.on('change', ved.setUrlAfter(ved.select));
+    vlSel.append('option').text('Custom');
+    vlSel.selectAll('optgroup')
+      .data(Object.keys(CQL_SPECS))
+     .enter().append('optgroup')
+      .attr('label', function(key) { return key; })
+     .selectAll('option.spec')
+      .data(function(key) { return CQL_SPECS[key]; })
+     .enter().append('option')
+      .attr('label', function(d) { return d.title; })
+      .text(function(d) { return d.name; });
+
     // Renderer drop-down menu
     var ren = el.select('.sel_render');
     ren.on('change', ved.setUrlAfter(ved.renderer));
@@ -382,15 +704,16 @@ ved.init = function(el, dir) {
       .attr('value', function(d) { return d.toLowerCase(); })
       .text(function(d) { return d; });
 
-    // Vega or Vega-lite mode
+    // Vega, Vega-lite, or CompassQL mode
     var mode = el.select('.sel_mode');
     mode.on('change', ved.setUrlAfter(ved.mode));
 
     // Code Editors
     var vlEditor = ved.editor[VEGA_LITE] = ace.edit(el.select('.vl-spec').node());
     var vgEditor = ved.editor[VEGA] = ace.edit(el.select('.vg-spec').node());
+    var cqlEditor = ved.editor[COMPASSQL] = ace.edit(el.select('.cql-spec').node());
 
-    [vlEditor, vgEditor].forEach(function(editor) {
+    [vlEditor, vgEditor, cqlEditor].forEach(function(editor) {
       editor.getSession().setMode('ace/mode/json');
       editor.getSession().setTabSize(2);
       editor.getSession().setUseSoftTabs(true);
@@ -420,6 +743,7 @@ ved.init = function(el, dir) {
     el.select('.btn_spec_format').on('click', ved.format);
     el.select('.btn_vg_parse').on('click', ved.setUrlAfter(ved.parseVg));
     el.select('.btn_vl_parse').on('click', ved.setUrlAfter(ved.parseVl));
+    el.select('.btn_cql_parse').on('click', ved.setUrlAfter(ved.parseCql));
     el.select('.btn_to_vega').on('click', ved.setUrlAfter(function() {
       d3.event.preventDefault();
       ved.switchToVega();
@@ -441,6 +765,7 @@ ved.init = function(el, dir) {
     ved.specs = {};
     ved.specs[VEGA] = getIndexes(VG_SPECS);
     ved.specs[VEGA_LITE] = getIndexes(VL_SPECS);
+    ved.specs[COMPASSQL] = getIndexes(CQL_SPECS);
 
     // Handle application parameters
     var p = ved.params();
@@ -450,7 +775,8 @@ ved.init = function(el, dir) {
     }
 
     if (p.mode) {
-      mode.node().selectedIndex = p.mode.toLowerCase() === VEGA_LITE ? 1 : 0;
+      mode.node().selectedIndex = p.mode.toLowerCase() === COMPASSQL ? 2 :
+        p.mode.toLowerCase() === VEGA_LITE ? 1 : 0;
     }
     ved.mode();
 
