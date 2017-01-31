@@ -310,7 +310,7 @@ function detachViewsInGroup(item) {
 function detachView(model) {
   var key = JSON.stringify(model.toSpec());
     if (ved.cql.views[key]) {
-      ved.cql.views[key].destroy();
+      ved.cql.views[key].finalize();
       delete ved.cql.views[key];
     }
 }
@@ -503,7 +503,7 @@ ved.parseCql = function(callback) {
     callback = function(err) {
       if (err) {
         // FIXME is this the right thing to do for parseCql
-        if (ved.view) ved.view.destroy();
+        if (ved.view) ved.view.finalize();
         console.error(err);
       }
     };
