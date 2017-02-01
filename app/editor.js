@@ -234,7 +234,7 @@ ved.parseVg = function(callback, config) {
 
   ved.resetView();
 
-  const runtime = vega.parse(vegaSpec, config);
+  var runtime = vega.parse(vegaSpec, config);
   ved.view = new vega.View(runtime, {
     loader: vega.loader({baseURL: ved.path})
   });
