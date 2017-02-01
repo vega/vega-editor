@@ -200,10 +200,10 @@ ved.parseVl = function(callback) {
   var vgSel = ved.$d3.select('.sel_vega_spec');
   vgSel.node().selectedIndex = 0;
 
-  ved.parseVg(callback);
+  ved.parseVg(callback, spec.config);
 };
 
-ved.parseVg = function(callback) {
+ved.parseVg = function(callback, config) {
   if (!callback) {
     callback = function(err) {
       if (err) {
@@ -228,13 +228,13 @@ ved.parseVg = function(callback) {
   }
 
   if (ved.getSelect().selectedIndex === 0 && ved.currentMode === VEGA) {
-    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method. 
+    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method.
     localStorage.setItem('vega-spec', value);
   }
 
   ved.resetView();
 
-  const runtime = vega.parse(vegaSpec);
+  const runtime = vega.parse(vegaSpec, config);
   ved.view = new vega.View(runtime, {
     loader: vega.loader({baseURL: ved.path})
   });
