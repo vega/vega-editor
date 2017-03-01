@@ -40,7 +40,7 @@
     "d3-cloud": "^1.2.1",
     "d3-geo-projection": "^0.2.15",
     "topojson": "^1.6.24",
-    "vega": "^3.0.0-beta.3",
+    "vega": "3.0.0-beta.24",
     "vega-datasets": "vega/vega-datasets#gh-pages",
     "vega-lite": "^1.0.0"
   },
