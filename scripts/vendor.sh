@@ -35,7 +35,7 @@ fi
 cp node_modules/d3/build/d3.min.js $TARGET
 cp lib/json3-compactstringify.js $TARGET
 eval $VEGA_OP "$CWD/node_modules/vega/build/vega*" $TARGET
-eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/vega-lite*" $TARGET
+eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/build/vega-lite*" $TARGET
 
 if [ ! -d "$TARGET/ace" ]; then
   mkdir $TARGET/ace
