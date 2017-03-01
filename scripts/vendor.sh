@@ -37,7 +37,7 @@ cp node_modules/d3/build/d3.min.js $TARGET
 cp lib/json3-compactstringify.js $TARGET
 eval $VEGA_OP "$CWD/node_modules/vega/build/vega*" $TARGET
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/vega-lite*" $TARGET
-eval $COMPASSQL_OP "$CWD/node_modules/compassql/compassql*" $TARGET
+eval $COMPASSQL_OP "$CWD/node_modules/compassql/build/compassql*" $TARGET
 
 if [ ! -d "$TARGET/ace" ]; then
   mkdir $TARGET/ace

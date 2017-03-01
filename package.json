@@ -43,7 +43,7 @@
     "vega": "3.0.0-beta.20",
     "vega-datasets": "vega/vega-datasets#gh-pages",
     "vega-lite": "2.0.0-alpha.1",
-    "compassql": "0.8.0"
+    "compassql": "^0.9.2"
   },
   "devDependencies": {
     "chokidar": "^1.2.0"
