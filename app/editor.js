@@ -483,7 +483,7 @@ ved.cql.renderItems = function(sel, group, indexPrefix) {
 
 ved.cql.generate = function(query) {
   var startTime = Date.now();
-  var rootGroup = cql.query(query, ved.cql.schema).result;
+  var rootGroup = cql.recommend(query, ved.cql.schema).result;
   var endTime = Date.now();
   console.log('Query time:', (endTime - startTime), 'milliseconds');
 
