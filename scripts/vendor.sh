@@ -1,8 +1,7 @@
 #!/bin/bash
-ACE=node_modules/ace-builds/src-min
-TARGET=vendor
-DATA=app/data
-SPEC=app/spec
+TARGET=public/vendor
+DATA=public/data
+SPEC=spec
 
 # Copy dependencies by default. Link if a -l flag is specified.
 CWD=$(pwd)
@@ -33,22 +32,7 @@ if [ ! -d "$TARGET" ]; then
   mkdir $TARGET
 fi
 
-cp node_modules/d3/d3.min.js $TARGET
-cp node_modules/d3-cloud/build/d3.layout.cloud.js $TARGET
-cp node_modules/d3-geo-projection/d3.geo.projection.min.js $TARGET
-cp node_modules/topojson/build/topojson.js $TARGET
 cp lib/json3-compactstringify.js $TARGET
-eval $VEGA_OP "$CWD/node_modules/vega/vega*" $TARGET
-eval $VEGA_EMBED_OP "$CWD/node_modules/vega-embed/vega-embed*" $TARGET
-eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/vega-lite*" $TARGET
-
-if [ ! -d "$TARGET/ace" ]; then
-  mkdir $TARGET/ace
-fi
-cp $ACE/ace.js $TARGET/ace
-cp $ACE/mode-json.js $TARGET/ace
-cp $ACE/worker-json.js $TARGET/ace
-cp $ACE/ext-searchbox.js $TARGET/ace
 
 echo "Copying data to '$DATA'."
 
@@ -64,6 +48,6 @@ if [ ! -d "$SPEC" ]; then
   mkdir $SPEC
 fi
 
-eval $VEGA_OP "$CWD/node_modules/vega/examples" "$SPEC/vega"
+eval $VEGA_OP "$CWD/node_modules/vega/spec" "$SPEC/vega"
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/examples/specs" "$SPEC/vega-lite"
-echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/examples/vl-examples.json` > app/vl-specs.js
+echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/examples/vl-examples.json` > public/js/vl-specs.js
