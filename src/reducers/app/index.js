@@ -65,7 +65,8 @@ export default (state = {
         vegaSpec: vegaSpec,
         mode: MODES.VegaLite,
         editorString: action.spec,
-        selectedExample: action.example
+        selectedExample: action.example,
+        debug: false
       });
     case UPDATE_VEGA_LITE_SPEC:
       try {
@@ -79,7 +80,8 @@ export default (state = {
         vegaLiteSpec: spec,
         vegaSpec: vegaSpec,
         mode: MODES.VegaLite,
-        editorString: action.spec
+        editorString: action.spec,
+        debug: false
       });
     case SET_GIST_VEGA_SPEC:
       try {
