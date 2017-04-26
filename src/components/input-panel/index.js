@@ -3,6 +3,8 @@ import SpecEditor from './spec-editor';
 import CompiledSpecDisplay from './compiled-spec-display';
 import CompiledSpecHeader from './compiled-spec-header';
 import Debug from './debug';
+import DebugHeader from './debug/debugHeader';
+import Overview from './debug/overview';
 import SplitPane from 'react-split-pane';
 import { MODES, LAYOUT } from '../../constants';
 import { connect } from 'react-redux';
@@ -21,13 +23,20 @@ class InputPanel extends React.Component {
     }
     if (debug) {
       innerPanes.push(<Debug key='debug' />);
+    } else {
+      innerPanes.push(<DebugHeader key='debugHeader'/>)
     }
+
+    // return (
+    //   <SpecEditor key='editor' />
+    //   <CompiledSpecDisplay style={{height:'100%'}} key='compiled'/>
+    // )
+
     return innerPanes;
   }
 
   render () {
     const innerPanes = this.getInnerPanes();
-
     let outerComponent;
     if ((this.props.mode === MODES.VegaLite && this.props.compiledVegaSpec) || this.props.debug) {
         outerComponent = React.createElement(SplitPane,
@@ -39,6 +48,7 @@ class InputPanel extends React.Component {
     } else {
       outerComponent = React.createElement('div', {style: {width: '100%'}}, innerPanes);
     }
+
     return outerComponent;
   };
 };

@@ -1,6 +1,6 @@
 import * as vl from 'vega-lite';
 
-import { UPDATE_VEGA_SPEC, UPDATE_VEGA_LITE_SPEC, TOGGLE_DEBUG, CYCLE_RENDERER, SET_VEGA_EXAMPLE, SET_VEGA_LITE_EXAMPLE,
+import { UPDATE_VEGA_SPEC, UPDATE_VEGA_LITE_SPEC, TOGGLE_DEBUG, TOGGLE_DEBUG_MODE, CYCLE_RENDERER, SET_VEGA_EXAMPLE, SET_VEGA_LITE_EXAMPLE,
   SHOW_COMPILED_VEGA_SPEC, SET_GIST_VEGA_SPEC, SET_GIST_VEGA_LITE_SPEC, SET_MODE } from '../../actions/editor';
 import { MODES, RENDERERS } from '../../constants';
 
@@ -13,7 +13,8 @@ export default (state = {
   debug: false,
   renderer: RENDERERS.Canvas,
   compiledVegaSpec: false,
-  gist: null
+  gist: null,
+  debugMode: 'timeline'
 }, action) => {
   let spec, vegaSpec;
   switch (action.type) {
@@ -25,7 +26,8 @@ export default (state = {
         selectedExample: null,
         editorString: JSON.stringify({}, null, 2),
         compiledVegaSpec: {},
-        gist: null
+        gist: null, 
+        debugMode: 'timeline'
       });
     case UPDATE_VEGA_SPEC:
       try {
@@ -114,6 +116,10 @@ export default (state = {
     case TOGGLE_DEBUG:
       return Object.assign({}, state, {
         debug: !state.debug,
+      });
+    case TOGGLE_DEBUG_MODE:
+      return Object.assign({}, state, {
+        debugMode: action.debugMode
       });
     case CYCLE_RENDERER:
       const rendererVals = Object.values(RENDERERS);

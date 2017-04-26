@@ -5,6 +5,7 @@ export const SET_VEGA_LITE_EXAMPLE = 'SET_VEGA_LITE_EXAMPLE';
 export const SET_GIST_VEGA_SPEC = 'SET_GIST_VEGA_SPEC';
 export const SET_GIST_VEGA_LITE_SPEC = 'SET_GIST_VEGA_LITE_SPEC';
 export const TOGGLE_DEBUG = 'TOGGLE_DEBUG';
+export const TOGGLE_DEBUG_MODE = 'TOGGLE_DEBUG_MODE';
 export const CYCLE_RENDERER = 'CYCLE_RENDERER';
 export const SHOW_COMPILED_VEGA_SPEC = 'SHOW_COMPILED_VEGA_SPEC'
 export const SET_MODE = 'SET_MODE'
@@ -67,6 +68,14 @@ export function toggleDebug () {
     type: TOGGLE_DEBUG
   };
 };
+
+export function toggleDebugMode (debugMode) {
+  return {
+    type: TOGGLE_DEBUG_MODE,
+    debugMode: debugMode
+  };
+};
+
 
 export function cycleRenderer () {
   return {
