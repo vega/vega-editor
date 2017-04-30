@@ -153,7 +153,11 @@ ved.renderer = function() {
       ren = sel.options[idx].value;
 
   ved.renderType = ren;
-  ved.parseVg();
+  if (ved.currentMode === VEGA) {
+    ved.parseVg();
+  } else {
+    ved.parseVl();
+  }
 };
 
 ved.format = function() {
