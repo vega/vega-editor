@@ -204,10 +204,10 @@ ved.parseVl = function(callback) {
   var vgSel = ved.$d3.select('.sel_vega_spec');
   vgSel.node().selectedIndex = 0;
 
-  ved.parseVg(callback, spec.config);
+  ved.parseVg(callback);
 };
 
-ved.parseVg = function(callback, config) {
+ved.parseVg = function(callback) {
   if (!callback) {
     callback = function(err) {
       if (err) {
@@ -238,7 +238,7 @@ ved.parseVg = function(callback, config) {
 
   ved.resetView();
 
-  var runtime = vega.parse(vegaSpec, config);
+  var runtime = vega.parse(vegaSpec);
   ved.view = new vega.View(runtime, {
     loader: vega.loader({baseURL: ved.path})
   });
