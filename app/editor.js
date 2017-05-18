@@ -1,11 +1,10 @@
 'use strict';
 
-/*global location, window, d3, vl, vg, localStorage, document,
+/*global location, window, d3, vl, vega, localStorage, document,
 alert, console, VG_SPECS, VL_SPECS, ace, JSON3*/
 
 var VEGA = 'vega';
 var VEGA_LITE = 'vega-lite';
-var VEGA_CONFIG = 'vega-config';
 
 var ved = {
   version: '1.2.0',
@@ -13,8 +12,7 @@ var ved = {
   renderType: 'canvas',
   editor: {
     vega: null,
-    'vega-lite': null,
-    config: null
+    'vega-lite': null
   },
   currentMode: null,
   vgHidden: true  // vega editor hidden in vl mode
@@ -55,7 +53,6 @@ ved.mode = function() {
     });
 
     ace.attr('class', 'ace_content');
-    debug.init();
   } else if (ved.currentMode === VEGA_LITE) {
     ved.editor[VEGA].setOptions({
       readOnly: true,
@@ -123,8 +120,8 @@ ved.select = function(spec) {
   spec = d3.select(sel.options[idx]).datum();
 
   if (idx > 0) {
-    d3.xhr(ved.uri(spec), function(error, response) {
-      editor.setValue(response.responseText);
+    d3.text(ved.uri(spec), function(error, response) {
+      editor.setValue(response);
       editor.gotoLine(0);
       parse(function(err) {
         if (err) console.error(err);
@@ -140,14 +137,14 @@ ved.select = function(spec) {
 
   if (mode === VEGA) {
     ved.resize();
-  } else if (mode === 'vl') {
+  } else if (mode === VEGA_LITE) {
     ved.resizeVlEditor();
   }
 };
 
 ved.uri = function(entry) {
   return ved.path + 'spec/' + ved.currentMode +
-    '/' + entry.name + '.json';
+    '/' + entry.name + (ved.currentMode === VEGA_LITE ? '.vl' : '.vg') + '.json';
 };
 
 ved.renderer = function() {
@@ -156,7 +153,11 @@ ved.renderer = function() {
       ren = sel.options[idx].value;
 
   ved.renderType = ren;
-  ved.parseVg();
+  if (ved.currentMode === VEGA) {
+    ved.parseVg();
+  } else {
+    ved.parseVl();
+  }
 };
 
 ved.format = function() {
@@ -210,15 +211,13 @@ ved.parseVg = function(callback) {
   if (!callback) {
     callback = function(err) {
       if (err) {
-        if (ved.view) ved.view.destroy();
         console.error(err);
       }
     };
   }
 
   var value = ved.editor[VEGA].getValue(),
-    config  = ved.editor[VEGA_CONFIG].getValue() || '{}',
-    opt;
+    vegaSpec;
 
   // delete cookie if editor is empty
   if (!value) {
@@ -227,53 +226,30 @@ ved.parseVg = function(callback) {
   }
 
   try {
-    opt = JSON.parse(value);
-    config = JSON.parse(config);
+    vegaSpec = JSON.parse(value);
   } catch (e) {
     return callback(e);
   }
 
-  var tracking = {
-    "name": "group_vgTRACKING",
-    "streams": [
-      {"type": "mousemove", "expr": "eventGroup()"}
-    ]
-  }
-  if(opt.signals) {
-    opt.signals.push(tracking);
-  } else {
-    opt.signals = [tracking]
-  }
-
   if (ved.getSelect().selectedIndex === 0 && ved.currentMode === VEGA) {
-    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method. 
+    // Only save the Vega spec to local storage if the mode is Vega since parseVl() also calls this method.
     localStorage.setItem('vega-spec', value);
   }
 
-  if (!opt.spec && !opt.url && !opt.source) {
-    // wrap spec for handoff to vega-embed
-    opt = {spec: opt};
-  }
-  opt.actions = false;
-  opt.renderer = opt.renderer || ved.renderType;
-  opt.parameter_el = '.mod_params';
-  opt.config = config;
-
   ved.resetView();
-  var a = vg.embed('.vis', opt, function(err, result) {
-    if (err) return callback(err);
-    ved.spec = result.spec;
-    ved.view = result.view;
-    callback(null, result.view);
-    if(ved.currentMode === VEGA) {
-      debug.start();
-    }
+
+  var runtime = vega.parse(vegaSpec);
+  ved.view = new vega.View(runtime, {
+    loader: vega.loader({baseURL: ved.path})
   });
+  ved.view.logLevel(vega.Info)
+    .initialize(document.querySelector('.vis'))
+    .renderer(ved.renderType)
+    .run();
 };
 
 ved.resetView = function() {
   var $d3 = ved.$d3;
-  if (ved.view) ved.view.destroy();
   $d3.select('.mod_params').html('');
   $d3.select('.spec_desc').html('');
   $d3.select('.vis').html('');
@@ -281,7 +257,6 @@ ved.resetView = function() {
 
 ved.resize = function(event) {
   ved.editor[VEGA].resize();
-  ved.editor[VEGA_CONFIG].resize();
   ved.editor[VEGA_LITE].resize();
 };
 
@@ -368,7 +343,6 @@ ved.getSelect = function() {
 ved.init = function(el, dir) {
   // Set base directory
   var PATH = dir || 'app/';
-  vg.config.load.baseURL = PATH;
   ved.path = PATH;
 
   el = (ved.$d3 = d3.select(el));
@@ -419,9 +393,8 @@ ved.init = function(el, dir) {
     // Code Editors
     var vlEditor = ved.editor[VEGA_LITE] = ace.edit(el.select('.vl-spec').node());
     var vgEditor = ved.editor[VEGA] = ace.edit(el.select('.vg-spec').node());
-    var vcEditor = ved.editor[VEGA_CONFIG] = ace.edit(el.select('.vc-spec').node());
 
-    [vlEditor, vgEditor, vcEditor].forEach(function(editor) {
+    [vlEditor, vgEditor].forEach(function(editor) {
       editor.getSession().setMode('ace/mode/json');
       editor.getSession().setTabSize(2);
       editor.getSession().setUseSoftTabs(true);
@@ -462,7 +435,6 @@ ved.init = function(el, dir) {
     }));
     d3.select(window).on('resize', ved.resize);
     ved.resize();
-    config.init();
 
     var getIndexes = function(obj) {
       return Object.keys(obj).reduce(function(a, k) {
