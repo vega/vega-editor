@@ -119,7 +119,6 @@ export default class Header extends React.Component {
           this.setState({
             customIsOpened: true,
             left: targetRect.left,
-            width: targetRect.width,
           });
         }}>
         {'New'}
