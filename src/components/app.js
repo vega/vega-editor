@@ -12,6 +12,34 @@ import { hashHistory } from 'react-router';
 
 class App extends React.Component {
 
+  static propTypes = {
+      error: React.PropTypes.string
+  }
+
+  componentWillMount() {
+    const parameter = this.props.params;
+    if (hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1 || this.props.error) {
+      if (parameter && parameter.example_name) {
+        const name = parameter.example_name;
+        if (parameter.vega === 'vega') {
+          if (name === 'custom') {
+            this.props.setVegaExample(name, '{}');
+          } else {
+            const spec = require(`../../spec/vega/${name}.vg.json`);
+            this.props.setVegaExample(name, JSON.stringify(spec, null, 2));
+          }
+        } else if (parameter.vega === 'vega_lite') {
+          if (name === 'custom') {
+            this.props.setVegaLiteExample(name, '{}');
+          } else {
+            const spec = require(`../../spec/vega-lite/${name}.vl.json`);
+            this.props.setVegaLiteExample(name, JSON.stringify(spec, null, 2));
+          }
+        }
+      }
+    }
+  }
+
   componentDidMount() {
     window.addEventListener("message", (evt) => {
       var data = evt.data;
@@ -41,28 +69,6 @@ class App extends React.Component {
   }
 
   render () {
-    const parameter = this.props.params;
-    if (hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
-      if (parameter && parameter.example_name) {
-        const name = parameter.example_name;
-        if (parameter.vega === 'vega') {
-          if (name === 'custom') {
-            this.props.setVegaExample(name, '{}');
-          } else {
-            const spec = require(`../../spec/vega/${name}.vg.json`);
-            this.props.setVegaExample(name, JSON.stringify(spec, null, 2));
-          }
-        } else if (parameter.vega === 'vega_lite') {
-          if (name === 'custom') {
-            this.props.setVegaLiteExample(name, '{}');
-          } else {
-            const spec = require(`../../spec/vega-lite/${name}.vl.json`);
-            this.props.setVegaLiteExample(name, JSON.stringify(spec, null, 2));
-          }
-        }
-      }
-    }
-
     const w = window.innerWidth;
     return (
       <div className="app-container">
@@ -89,6 +95,12 @@ class App extends React.Component {
   };
 };
 
+function mapStateToProps (state, ownProps) {
+  return {
+    error: state.app.error
+  };
+}
+
 const mapDispatchToProps = function (dispatch) {
   return {
     setMode: (mode) => {
@@ -109,4 +121,4 @@ const mapDispatchToProps = function (dispatch) {
   };
 };
 
-export default connect(null, mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);
