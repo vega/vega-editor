@@ -16,13 +16,23 @@ export default class Header extends React.Component {
     super(props);
     this.state = {
       showVega: props.mode === MODES.Vega,
-      url: ''
+      url: '',
+      filename: '',
+      description: ''
     };
     this.onSelectVega = this.onSelectVega.bind(this);
   }
 
   handleChange(event) {
     this.setState({url: event.target.value});
+  }
+
+  handleFilenameChange(event) {
+    this.setState({filename: event.target.value});
+  }
+
+  handleDesChange(event) {
+    this.setState({description: event.target.value});
   }
 
   onSelectVega (name) {
@@ -83,7 +93,34 @@ export default class Header extends React.Component {
     })
   }
 
+  postData(filename, description) {
+    fetch('https://hook.io/tianyiii/create-in-gist/' + filename + '/' + description, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        spec: this.props.editorString,
+      })
+    }).then((response) => {
+      return response.json();
+    }).then((value) => {
+      console.log(value[filename]);
+    })
+  }
+
   render () {
+    const saveInGistButton = (
+      <div className='button'
+        onClick={(e) => {
+          this.setState({
+            saveIsOpened: true
+          });
+        }}>
+        {'Save'}
+      </div>
+    ); 
+
     const examplesButton = (
       <div className='button'
         onClick={(e) => {
@@ -210,6 +247,29 @@ export default class Header extends React.Component {
       </div>
     );
 
+    const saveGist = (
+      <div>
+        <div className='gist-content'>
+          filename:
+          <input className='gist-input' type='text' placeholder='enter filename here' value={this.state.filename}
+          onChange={this.handleFilenameChange.bind(this)}/>
+
+          description:
+          <input className='gist-input' type='text' placeholder='enter file description here' value={this.state.description}
+          onChange={this.handleDesChange.bind(this)}/>
+
+          <button className='gist-button' onClick={() => {
+            this.postData(this.state.filename, this.state.description);
+            this.setState({
+              saveIsOpened: false,
+              url: ''
+            })
+          }}> Save in Gist
+          </button>
+        </div>
+      </div>
+    );
+
     return (
         <div className='header'>
           <img height={37} style={{margin: 10}} alt="IDL Logo" src="https://vega.github.io/images/idl-logo.png" />
@@ -217,6 +277,7 @@ export default class Header extends React.Component {
           {gistButton}
           {docsLink}
           {customButton}
+          {saveInGistButton}
 
         <Portal
           closeOnEsc
@@ -271,6 +332,23 @@ export default class Header extends React.Component {
 
         <Portal
           closeOnOutsideClick={true}
+          isOpened={this.state.saveIsOpened}
+          onClose={() => { this.setState({ saveIsOpened: false});}}
+        >
+        <div className='modal-background'>
+          <div className='modal-header'>
+            <button className='close-button' onClick={() => {this.setState({ saveIsOpened: false });}}>✖</button>
+          </div>
+          <div className='modal-area'>
+            <div className='modal'>
+              {saveGist}
+            </div>
+          </div>
+        </div>
+      </Portal>
+
+        <Portal
+          closeOnOutsideClick={true}
           isOpened={this.state.gistIsOpened}
           onClose={() => { this.setState({ gistIsOpened: false});}}
         >
@@ -286,6 +364,7 @@ export default class Header extends React.Component {
         </div>
         </Portal>
       </div>
+
     );
   };
 };

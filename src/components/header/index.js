@@ -4,6 +4,7 @@ import * as EditorActions from '../../actions/editor';
 
 const mapStateToProps = function (state, ownProps) {
   return {
+    editorString: state.app.editorString,
     mode: state.app.mode
   };
 };
