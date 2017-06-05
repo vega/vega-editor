@@ -215,11 +215,11 @@
 
 .customSubmenu {
   font-size: 16px;
-  padding: 5px 10px;
+  padding: 10px 23px;
   background: white;
-  border-left: solid 1px black;
-  border-right: solid 1px black;
-  border-bottom: solid 1px black;
+  border-left: solid 1px #A9A9A9;
+  border-right: solid 1px #A9A9A9;
+  border-bottom: solid 1px #A9A9A9;
   cursor: pointer;
 }
 
