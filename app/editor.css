@@ -1,3 +1,16 @@
+.announcement {
+  font-family: sans-serif;
+  padding: .6em 0;
+  background-color: #b53e3e;
+  color: white;
+  text-align: center;
+}
+
+.announcement a {
+  color: white;
+  text-decoration: underline;
+}
+
 .vega-editor {
   display: -webkit-flex;
   display: flex;
