@@ -105,7 +105,9 @@ export default class Header extends React.Component {
     }).then((response) => {
       return response.json();
     }).then((value) => {
-      console.log(value[filename]);
+      let arrayNames = value[filename].raw_url.split('/');
+      let id = arrayNames[4];
+      hashHistory.push('/gist/' + this.props.mode +'/anonymous/' + id);
     })
   }
 
@@ -139,7 +141,7 @@ export default class Header extends React.Component {
             gistIsOpened: true
           });
         }}>
-        {'Gist'}
+        {'Load'}
       </div>
     );
 
@@ -250,21 +252,26 @@ export default class Header extends React.Component {
     const saveGist = (
       <div>
         <div className='gist-content'>
-          filename:
-          <input className='gist-input' type='text' placeholder='enter filename here' value={this.state.filename}
-          onChange={this.handleFilenameChange.bind(this)}/>
+          <div className='gist-filename'>
+            filename:
+            <br />
+            <span className='gist-filename-text'> Add .json to save as a json file. For example: </span>
+            <span className='gist-filename-example'>test.json</span>
+          </div>
+            <input className='gist-save-input' type='text' placeholder='enter filename here' value={this.state.filename}
+            onChange={this.handleFilenameChange.bind(this)}/>
 
-          description:
-          <input className='gist-input' type='text' placeholder='enter file description here' value={this.state.description}
-          onChange={this.handleDesChange.bind(this)}/>
+            description:
+            <input className='gist-save-input' type='text' placeholder='enter file description here' value={this.state.description}
+            onChange={this.handleDesChange.bind(this)}/>
 
-          <button className='gist-button' onClick={() => {
+          <button className='gist-save-button' onClick={() => {
             this.postData(this.state.filename, this.state.description);
             this.setState({
               saveIsOpened: false,
               url: ''
             })
-          }}> Save in Gist
+          }}> Save as Anonymous Gist 
           </button>
         </div>
       </div>
@@ -274,9 +281,9 @@ export default class Header extends React.Component {
         <div className='header'>
           <img height={37} style={{margin: 10}} alt="IDL Logo" src="https://vega.github.io/images/idl-logo.png" />
           {examplesButton}
+          {customButton}
           {gistButton}
           {docsLink}
-          {customButton}
           {saveInGistButton}
 
         <Portal
