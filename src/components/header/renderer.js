@@ -253,7 +253,7 @@ export default class Header extends React.Component {
       <div>
         <div className='gist-content'>
           <div className='gist-filename'>
-            filename:
+            Enter Filename:
             <br />
             <span className='gist-filename-text'> Add .json to save as a json file. For example: </span>
             <span className='gist-filename-example'>test.json</span>
@@ -261,7 +261,7 @@ export default class Header extends React.Component {
             <input className='gist-save-input' type='text' placeholder='enter filename here' value={this.state.filename}
             onChange={this.handleFilenameChange.bind(this)}/>
 
-            description:
+            Enter Description:
             <input className='gist-save-input' type='text' placeholder='enter file description here' value={this.state.description}
             onChange={this.handleDesChange.bind(this)}/>
 
