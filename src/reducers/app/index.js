@@ -113,7 +113,6 @@ export default (state = {
     case UPDATE_VEGA_LITE_SPEC:
       try {
         spec = JSON.parse(action.spec);
-        vegaSpec = vl.compile(spec).spec;
       } catch (e) {
         console.warn(e);
         return Object.assign({}, state, {
@@ -134,6 +133,15 @@ export default (state = {
           error: null
         });
       } else {
+        try {
+          vegaSpec = vl.compile(spec).spec;
+        } catch (e) {
+          console.warn(e);
+          return Object.assign({}, state, {
+            error: e.message,
+            editorString: JSON3.stringify(spec, null, 2, 60)
+          });
+        }
         return Object.assign({}, state, {
           vegaLiteSpec: spec,
           vegaSpec: vegaSpec,
