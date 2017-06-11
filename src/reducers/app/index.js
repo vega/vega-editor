@@ -3,7 +3,7 @@ import * as vl from 'vega-lite';
 import { UPDATE_VEGA_SPEC, UPDATE_VEGA_LITE_SPEC, TOGGLE_DEBUG, CYCLE_RENDERER, SET_VEGA_EXAMPLE, SET_VEGA_LITE_EXAMPLE,
   SHOW_COMPILED_VEGA_SPEC, SET_GIST_VEGA_SPEC, SET_GIST_VEGA_LITE_SPEC, SET_MODE } from '../../actions/editor';
 import { MODES, RENDERERS } from '../../constants';
-
+import parser from 'vega-schema-url-parser'
 const JSON3 = require('../../../lib/json3-compactstringify');
 
 export default (state = {
@@ -40,12 +40,37 @@ export default (state = {
           editorString: JSON3.stringify(spec, null, 2, 60)
         });
       }
-      return Object.assign({}, state, {
-        vegaSpec: spec,
-        mode: MODES.Vega,
-        editorString: JSON3.stringify(spec, null, 2, 60),
-        error: null
-      });
+      let schema = spec.$schema;
+      let parsed;
+      if (schema) {
+        parsed = parser(schema).library;
+      }
+      if (parsed === MODES.VegaLite) {
+        try {
+          vegaSpec = vl.compile(spec).spec;
+        } catch (e) {
+          console.warn(e);
+          return Object.assign({}, state, {
+            error: e.message,
+            editorString: JSON3.stringify(spec, null, 2, 60)
+          });
+        }
+        return Object.assign({}, state, {
+          vegaLiteSpec: spec,
+          vegaSpec: vegaSpec,
+          mode: MODES.VegaLite,
+          editorString: JSON3.stringify(spec, null, 2, 60),
+          selectedExample: action.example,
+          error: null
+        });
+      } else {
+        return Object.assign({}, state, {
+          vegaSpec: spec,
+          mode: MODES.Vega,
+          editorString: JSON3.stringify(spec, null, 2, 60),
+          error: null
+        });
+      }
     case SET_VEGA_EXAMPLE:
       try {
         spec = JSON.parse(action.spec);
@@ -96,13 +121,27 @@ export default (state = {
           editorString: JSON3.stringify(spec, null, 2, 60)
         });
       }
-      return Object.assign({}, state, {
-        vegaLiteSpec: spec,
-        vegaSpec: vegaSpec,
-        mode: MODES.VegaLite,
-        editorString: JSON3.stringify(spec, null, 2, 60),
-        error: null
-      });
+      schema = spec.$schema;
+      if (schema) {
+        parsed = parser(schema).library;
+      }
+      if (parsed === MODES.Vega) {
+        return Object.assign({}, state, {
+          vegaSpec: spec,
+          mode: MODES.Vega,
+          editorString: JSON3.stringify(spec, null, 2, 60),
+          selectedExample: action.example,
+          error: null
+        });
+      } else {
+        return Object.assign({}, state, {
+          vegaLiteSpec: spec,
+          vegaSpec: vegaSpec,
+          mode: MODES.VegaLite,
+          editorString: JSON3.stringify(spec, null, 2, 60),
+          error: null
+        });
+      }
     case SET_GIST_VEGA_SPEC:
       try {
         spec = JSON.parse(action.spec);
