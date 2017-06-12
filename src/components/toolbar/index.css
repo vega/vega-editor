@@ -23,17 +23,11 @@
 .status {
   background: #399e39;
   color: white;
-  cursor: ;
+  cursor: default;
 }
 
 .toolbar .debug-toggle {
   background: #399e39;
   color: white;
   margin-left: 20px;
-}
-
-.toolbar .error-field {
-  background: #f0ad4e;
-  color: white;
-  cursor: text;
 }
