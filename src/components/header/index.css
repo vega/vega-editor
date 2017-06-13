@@ -231,3 +231,15 @@
 #emptyButton:hover {
   border-bottom: solid 5px rgb(92, 64, 141);
 }
+
+#error-field {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  display: inline-block;
+  padding: 5px 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  background: red;
+  color: white;
+  cursor: default;
+}

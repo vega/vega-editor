@@ -68,7 +68,8 @@
     "redux-thunk": "^2.2.0",
     "vega": "^3.0.0-beta.30",
     "vega-datasets": "^1.8.0",
-    "vega-lite": "^2.0.0-beta.1"
+    "vega-lite": "^2.0.0-beta.1",
+    "vega-schema-url-parser": "^1.0.0-beta.2"
   },
   "scripts": {
     "start": "node scripts/start.js",

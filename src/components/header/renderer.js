@@ -207,6 +207,11 @@ export default class Header extends React.Component {
       </div>
     );
 
+    const specErrors = this.props.error ?
+      <div id='error-field'>
+        {this.props.error}
+      </div> : null;
+
     return (
         <div className='header'>
           <img height={37} style={{margin: 10}} alt="IDL Logo" src="https://vega.github.io/images/idl-logo.png" />
@@ -282,6 +287,7 @@ export default class Header extends React.Component {
           </div>
         </div>
         </Portal>
+        {specErrors}
       </div>
     );
   };
