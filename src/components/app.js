@@ -41,17 +41,17 @@ class App extends React.Component {
     }
 
     setTimeout(() => {
-      this.setExample(this.props.params);
+      this.loadSpecFromCurrentURL(this.props.params);
     }, 500);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.params !== nextProps.params) {
-      this.setExample(nextProps.params);
+      this.loadSpecFromCurrentURL(nextProps.params);
     }
   }
 
-  setExample(parameter) {
+  loadSpecFromCurrentURL(parameter) {
     if (hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
       if (parameter && parameter.example_name) {
         const name = parameter.example_name;
@@ -71,6 +71,13 @@ class App extends React.Component {
               this.props.setVegaLiteExample(name, spec);
             });
           }
+        }
+      } else if (parameter && parameter.username && parameter.id) {
+        const url = `https://gist.github.com/${parameter.username}/${parameter.id}`;
+        if (parameter.mode === 'vega') {
+          this.props.setGistVega(url);
+        } else {
+          this.props.setGistVegaLite(url);
         }
       }
     }
@@ -109,6 +116,12 @@ const mapDispatchToProps = function (dispatch) {
     },
     setVegaLiteExample: (example, val) => {
       dispatch(EditorActions.setVegaLiteExample(example, val));
+    },
+    setGistVegaLite: (url) => {
+      dispatch(EditorActions.setGistVegaLite(url));
+    },
+    setGistVega: (url) => {
+      dispatch(EditorActions.setGistVega(url));
     }
   };
 };
