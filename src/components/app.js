@@ -9,6 +9,7 @@ import * as EditorActions from '../actions/editor';
 import { connect } from 'react-redux';
 import './app.css';
 import { hashHistory } from 'react-router';
+import { text } from 'd3-request';
 
 class App extends React.Component {
 
@@ -38,31 +39,44 @@ class App extends React.Component {
     if (parameter.mode && hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
        this.props.setMode(parameter.mode);
     }
+
+    setTimeout(() => {
+      this.setExample(this.props.params);
+    }, 500);
   }
 
-  render () {
-    const parameter = this.props.params;
+  componentWillReceiveProps(nextProps) {
+    if (this.props.params !== nextProps.params) {
+      this.setExample(nextProps.params);
+    }
+  }
+
+  setExample(parameter) {
     if (hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
       if (parameter && parameter.example_name) {
         const name = parameter.example_name;
-        if (parameter.vega === 'vega') {
+        if (parameter.mode === 'vega') {
           if (name === 'custom') {
             this.props.setVegaExample(name, '{}');
           } else {
-            const spec = require(`../../spec/vega/${name}.vg.json`);
-            this.props.setVegaExample(name, JSON.stringify(spec, null, 2));
+            text(`./spec/vega/${name}.vg.json`, spec => {
+              this.props.setVegaExample(name, spec);
+            });
           }
-        } else if (parameter.vega === 'vega_lite') {
+        } else if (parameter.mode === 'vega-lite') {
           if (name === 'custom') {
             this.props.setVegaLiteExample(name, '{}');
           } else {
-            const spec = require(`../../spec/vega-lite/${name}.vl.json`);
-            this.props.setVegaLiteExample(name, JSON.stringify(spec, null, 2));
+            text(`./spec/vega-lite/${name}.vl.json`, spec => {
+              this.props.setVegaLiteExample(name, spec);
+            });
           }
         }
       }
     }
+  }
 
+  render () {
     const w = window.innerWidth;
     return (
       <div className="app-container">
@@ -74,16 +88,6 @@ class App extends React.Component {
           </SplitPane>
         </div>
         <Toolbar />
-        {/*<div>
-          {
-            (() => {
-              if (process.env.NODE_ENV !== 'production') {
-                const DevTools = require('./debug/dev-tools').default;
-                return <DevTools visibleOnLoad={false} />;
-              }
-            })()
-          }
-        </div>*/}
       </div>
     );
   };

@@ -28,11 +28,11 @@ module.exports = {
   // We don't use source maps here because they can be confusing:
   // https://github.com/facebookincubator/create-react-app/issues/343#issuecomment-237241875
   // You may want 'cheap-module-source-map' instead if you prefer source maps.
-  devtool: 'eval',
+  devtool: 'cheap-module-source-map',
   // These are the "entry points" to our application.
   // This means they will be the "root" imports that are included in JS bundle.
   // The first two entry points enable "hot" CSS and auto-refreshes for JS.
-  entry: [
+  entry: {
     // Include an alternative client for WebpackDevServer. A client's job is to
     // connect to WebpackDevServer by a socket and get notified about changes.
     // When you save a file, the client will either apply hot updates (in case
@@ -43,15 +43,32 @@ module.exports = {
     // the line below with these two lines if you prefer the stock client:
     // require.resolve('webpack-dev-server/client') + '?/',
     // require.resolve('webpack/hot/dev-server'),
-    require.resolve('react-dev-utils/webpackHotDevClient'),
-    // We ship a few polyfills by default:
-    require.resolve('./polyfills'),
-    // Finally, this is your app's code:
-    paths.appIndexJs
-    // We include the app code last so that if there is a runtime error during
-    // initialization, it doesn't blow up the WebpackDevServer client, and
-    // changing JS code would still trigger a refresh.
-  ],
+    app: paths.appIndexJs,
+    //  [
+    //   require.resolve('react-dev-utils/webpackHotDevClient'),
+    //   // We ship a few polyfills by default:
+    //   require.resolve('./polyfills'),
+    //   // Finally, this is your app's code:
+    //   // We include the app code last so that if there is a runtime error during
+    //   // initialization, it doesn't blow up the WebpackDevServer client, and
+    //   // changing JS code would still trigger a refresh.
+
+    // ],
+    vendor: [
+      'react',
+      'react-dom',
+      'react-grid-layout',
+      'react-monaco-editor',
+      'react-portal',
+      'react-redux',
+      'react-router',
+      'react-router-redux',
+      'react-split-pane',
+      'redux',
+      'redux-localstorage',
+      'vega'
+    ]
+  },
   output: {
     // Next line is not used in dev but WebpackDevServer crashes without it:
     path: paths.appBuild,
@@ -91,10 +108,18 @@ module.exports = {
         test: /\.(js|jsx)$/,
         loader: 'eslint',
         include: paths.appSrc,
-      }
+      },
     ],
     loaders: [
       // Process JS with Babel.
+      {
+        test: /\.(js|jsx)$/,
+        loader: 'source-map-loader'
+      },
+      {
+        test: /\.tsx?$/,
+        loader: 'awesome-typescript-loader'
+      },
       {
         test: /\.(js|jsx)$/,
         include: paths.appSrc,
@@ -178,6 +203,7 @@ module.exports = {
     new webpack.DefinePlugin(env),
     // This is necessary to emit hot updates (currently CSS only):
     new webpack.HotModuleReplacementPlugin(),
+
     // Watcher doesn't work well if you mistype casing in a path so we use
     // a plugin that prints an error when you attempt to do this.
     // See https://github.com/facebookincubator/create-react-app/issues/240
@@ -190,7 +216,8 @@ module.exports = {
     new CopyWebpackPlugin([{
       from: 'node_modules/monaco-editor/min/vs',
       to: 'vs',
-    }])
+    }]),
+    new webpack.optimize.CommonsChunkPlugin(/* chunkName= */"vendor", /* filename= */"vendor.bundle.js")
   ],
   // Some libraries import Node modules but don't use them in the browser.
   // Tell Webpack to provide empty mocks for them so importing them works.
