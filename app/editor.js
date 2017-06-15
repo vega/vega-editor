@@ -298,8 +298,6 @@ function detachViewsInGroup(item) {
       detachViewsInGroup(childItem);
     });
   }
-  // if (item instanceof cql.model.SpecQueryModelGroup) { // it's a group
-  // }
   else { // it's a SpecQueryModel
     detachView(item);
   }
