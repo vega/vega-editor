@@ -268,7 +268,7 @@ ved.cql = { // namespace for CompassQL
  * Initialize schema and stats for CompassQL
  */
 ved.cql.init = function(data) {
-  ved.cql.schema = cql.schema.Schema.build(data);
+  ved.cql.schema = cql.schema.build(data);
 };
 
 function getRankingSummaryText(orderBy, specM) {
@@ -293,7 +293,7 @@ function getRankingSummaryText(orderBy, specM) {
 * So the event signals can be garbage-collected when a group exits
 */
 function detachViewsInGroup(item) {
-  if (item instanceof cql.model.SpecQueryModelGroup) { // it's a group
+  if (cql.model.isSpecQueryGroup(item)) {
     item.items.forEach(function(childItem) {
       detachViewsInGroup(childItem);
     });
@@ -351,7 +351,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
-      var topItem = childGrp.getTopSpecQueryModel();
+      var topItem = childGrp.getTopSpecQueryItem();
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         return getRankingSummaryText(orderGroupBy, topItem);
