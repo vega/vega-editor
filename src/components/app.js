@@ -13,7 +13,8 @@ import { text } from 'd3-request';
 
 class App extends React.Component {
 
-  componentDidMount() {
+  async componentDidMount() {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     window.addEventListener("message", (evt) => {
       var data = evt.data;
       console.log('[Vega-Editor] Received Message', evt.origin, data);
@@ -35,14 +36,7 @@ class App extends React.Component {
       }, 500);
     }, false);
 
-    const parameter = this.props.params;
-    if (parameter.mode && hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
-       this.props.setMode(parameter.mode);
-    }
-
-    setTimeout(() => {
-      this.setExample(this.props.params);
-    }, 500);
+    this.setExample(this.props.params);
   }
 
   componentWillReceiveProps(nextProps) {
