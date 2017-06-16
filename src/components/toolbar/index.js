@@ -7,7 +7,8 @@ function mapStateToProps (state, ownProps) {
     renderer: state.app.renderer,
     error: state.app.error,
     mode: state.app.mode,
-    autoParse: state.app.autoParse
+    autoParse: state.app.autoParse,
+    warningsLogger: state.app.warningsLogger
   };
 }
 
@@ -20,6 +21,10 @@ const mapDispatchToProps = function (dispatch) {
 
     cycleRenderer: () => {
       dispatch(EditorActions.cycleRenderer());
+    },
+
+    showErrorPane: () => {
+      dispatch(EditorActions.showErrorPane());
     }
   };
 };

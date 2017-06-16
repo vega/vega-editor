@@ -1,0 +1,10 @@
+li {
+  list-style-type: none;
+}
+.error {
+  color: red
+}
+
+.warnings {
+  color: #f0ad4e;
+}

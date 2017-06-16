@@ -5,6 +5,10 @@ import 'vega-tooltip/build/vega-tooltip.css';
 import './index.css';
 import Vega from '../../constants'
 import * as vegaTooltip from 'vega-tooltip';
+import SplitPane from 'react-split-pane';
+import Error from '../error';
+import ErrorPane from '../error-pane';
+import Toolbar from '../toolbar';
 
 export default class Editor extends React.Component {
   static propTypes = {
@@ -40,16 +44,31 @@ export default class Editor extends React.Component {
     this.renderVega(nextProps);
   }
 
-  render () {
+  getChart() {
     return (
       <div className='chart-container'>
+        <Error />
         <div className='chart'>
           <div ref='chart'>
           </div>
           <div id="vis-tooltip" className="vg-tooltip">
           </div>
         </div>
+        <Toolbar />
       </div>
     );
+  }
+
+  render () {
+    if ((this.props.error != null || this.props.warningsLogger.warns.length > 0) && this.props.errorPane) {
+      return (
+        <SplitPane split='horizontal' defaultSize={window.innerWidth * 0.4}>
+          {this.getChart()}
+          <ErrorPane />
+        </SplitPane>
+      );
+    } else {
+      return this.getChart();
+    }
   };
-};
+}

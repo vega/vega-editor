@@ -7,8 +7,9 @@ export const SET_GIST_VEGA_SPEC = 'SET_GIST_VEGA_SPEC';
 export const SET_GIST_VEGA_LITE_SPEC = 'SET_GIST_VEGA_LITE_SPEC';
 export const TOGGLE_AUTO_PARSE = 'TOGGLE_AUTO_PARSE';
 export const CYCLE_RENDERER = 'CYCLE_RENDERER';
-export const SHOW_COMPILED_VEGA_SPEC = 'SHOW_COMPILED_VEGA_SPEC'
-export const SET_MODE = 'SET_MODE'
+export const SHOW_COMPILED_VEGA_SPEC = 'SHOW_COMPILED_VEGA_SPEC';
+export const SET_MODE = 'SET_MODE';
+export const SHOW_ERROR_PANE = 'SHOW_ERROR_PANE';
 
 export function setMode (mode) {
   return {
@@ -87,3 +88,9 @@ export function showCompiledVegaSpec () {
     type: SHOW_COMPILED_VEGA_SPEC
   };
 };
+
+export function showErrorPane () {
+  return {
+    type: SHOW_ERROR_PANE
+  }
+}
