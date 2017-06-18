@@ -193,6 +193,21 @@
   color: white;
 }
 
+.gist-save-button:hover  {
+  background: rgb(92, 64, 141);
+  color: white;
+}
+
+.gist-save-button {
+  background: white;
+  border: 1px solid #A9A9A9;
+  cursor: pointer;
+  width: 100%;
+  height: 30px;
+  font-size: 16px;
+  outline: none;
+}
+
 .gist-text {
   margin-top: 25px;
   font-size: 12px;
@@ -215,6 +230,31 @@
   padding: 5px;
 }
 
+.gist-save-input {
+  display: inline;
+  width: 100%;
+  resize: none;
+  font-size: 14px;
+  margin-top: 5px;
+  margin-bottom: 30px;
+  padding: 5px;
+}
+
+.gist-filename {
+  display: inline;
+}
+
+.gist-filename-text {
+  font-size: 12px;
+  font-style: italic;
+}
+
+.gist-filename-example {
+  font-size: 12px;
+  font-style: italic;
+  color: rgb(6,69,173);
+}
+
 .customSubmenu {
   font-size: 16px;
   padding: 10px 23px;
@@ -232,4 +272,33 @@
 
 #emptyButton:hover {
   border-bottom: solid 5px rgb(92, 64, 141);
+}
+
+
+
+@keyframes flickerAnimation {
+  0%   { opacity:1; }
+  50%  { opacity:0; }
+  100% { opacity:1; }
+}
+@-o-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0; }
+  100% { opacity:1; }
+}
+@-moz-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0; }
+  100% { opacity:1; }
+}
+@-webkit-keyframes flickerAnimation{
+  0%   { opacity:1; }
+  50%  { opacity:0; }
+  100% { opacity:1; }
+}
+.save-gist-content {
+   -webkit-animation: flickerAnimation 3s infinite;
+   -moz-animation: flickerAnimation 3s infinite;
+   -o-animation: flickerAnimation 3s infinite;
+    animation: flickerAnimation 3s infinite;
 }

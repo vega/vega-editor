@@ -4,18 +4,19 @@ import * as EditorActions from '../../actions/editor';
 
 const mapStateToProps = function (state, ownProps) {
   return {
+    editorString: state.app.editorString,
     mode: state.app.mode
   };
 };
 
 const mapDispatchToProps = function (dispatch) {
   return {
-    setGistVegaSpec: (gist, spec) => {
-      dispatch(EditorActions.setGistVegaSpec(gist, spec));
+    setGistVega: (url) => {
+      dispatch(EditorActions.setGistVega(url));
     },
 
-    setGistVegaLiteSpec: (gist, spec) => {
-      dispatch(EditorActions.setGistVegaLiteSpec(gist, spec));
+    setGistVegaLite: (url) => {
+      dispatch(EditorActions.setGistVegaLite(url));
     }
   };
 };

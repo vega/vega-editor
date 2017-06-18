@@ -13,13 +13,23 @@ export default class Header extends React.Component {
     super(props);
     this.state = {
       showVega: props.mode === MODES.Vega,
-      url: ''
+      url: '',
+      filename: '',
+      description: ''
     };
     this.onSelectVega = this.onSelectVega.bind(this);
   }
 
   handleChange(event) {
     this.setState({url: event.target.value});
+  }
+
+  handleFilenameChange(event) {
+    this.setState({filename: event.target.value});
+  }
+
+  handleDesChange(event) {
+    this.setState({description: event.target.value});
   }
 
   onSelectVega (name) {
@@ -36,51 +46,41 @@ export default class Header extends React.Component {
     hashHistory.push('/examples/vega-lite/' + name);
   }
 
-  fetchData(gistUrl, vegaVersion) {
-    let prefix = 'https://hook.io/tianyiii/vegaeditor/';
-    let hookUrl = prefix + vegaVersion + '/'
-      + gistUrl.substring(gistUrl.indexOf('.com/') + '.com/'.length);
-    let suffix = hookUrl.substring(prefix.length);
-
-    fetch(hookUrl, {
-      method: 'get',
-      mode: 'cors'
+  postData(filename, description) {
+    this.setState({
+      saveIsOpened: true
     })
-    .then((response) => {
-      if (response.status === 200) {
-        return Promise.resolve(response);
-      } else {
-        return Promise.reject(new Error(response.statusText));
-      }
-    })
-    .then((response) => {
-      let arrayNames = suffix.split('/');
-      if (arrayNames.length < 3) {
-        console.warn('invalid url');
-        return;
-      }
-      let username = arrayNames[1];
-      let id = arrayNames[2];
-      hashHistory.push('/gist/' + vegaVersion +'/' + username + '/' + id);
+    fetch('https://hook.io/tianyiii/create-in-gist/' + filename + '/' + description, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        spec: this.props.editorString,
+      })
+    }).then((response) => {
+      this.setState({
+        saveIsOpened: false,
+        url: ''
+      })
       return response.json();
-    })
-    .then((data) => {
-      if (data['message'] !== 'Not Found') {
-        if (vegaVersion === 'vega') {
-          this.props.setGistVegaSpec(hookUrl, JSON.stringify(data, null, 2));
-        } else if (vegaVersion === 'vega-lite') {
-          this.props.setGistVegaLiteSpec(hookUrl, JSON.stringify(data, null, 2));
-        }
-      } else {
-        console.warn('invalid url');
-      }
-    })
-    .catch((ex) => {
-      console.error(ex);
+    }).then((value) => {
+      let arrayNames = value[filename].raw_url.split('/');
+      let id = arrayNames[4];
+      hashHistory.push('/gist/' + this.props.mode +'/anonymous/' + id);
     })
   }
 
   render () {
+    const saveInGistButton = (
+      <div className='button'
+        onClick={(e) => {
+          this.postData(`${this.props.mode}-spec.json`, 'vega-editor-generated-gist');
+        }}>
+        {'Save'}
+      </div>
+    );
+
     const examplesButton = (
       <div className='button'
         onClick={(e) => {
@@ -99,7 +99,7 @@ export default class Header extends React.Component {
             gistIsOpened: true
           });
         }}>
-        {'Gist'}
+        {'Load'}
       </div>
     );
 
@@ -187,7 +187,7 @@ export default class Header extends React.Component {
           onChange={this.handleChange.bind(this)}/>
 
           <button className='gist-button' onClick={() => {
-            this.fetchData(this.state.url, 'vega');
+            this.props.setGistVega(this.state.url);
             this.setState({
               gistIsOpened: false,
               url: ''
@@ -195,7 +195,7 @@ export default class Header extends React.Component {
           }}> Vega
           </button>
           <button className='gist-button' onClick={() => {
-            this.fetchData(this.state.url, 'vega-lite');
+            this.props.setGistVegaLite(this.state.url);
             this.setState({
               gistIsOpened: false,
               url: ''
@@ -206,15 +206,24 @@ export default class Header extends React.Component {
       </div>
     );
 
+    const saveGist = (
+      <div>
+        <div className='save-gist-content'>
+          Saving gist... please wait...
+        </div>
+      </div>
+    );
+
     return (
         <div className='header'>
           <a className="idl-logo" href="https://idl.cs.washington.edu/" target="_blank">
             <img height={37} alt="IDL Logo" src="https://vega.github.io/images/idl-logo.png" />
           </a>
           {examplesButton}
+          {customButton}
           {gistButton}
           {docsLink}
-          {customButton}
+          {saveInGistButton}
 
         <Portal
           closeOnEsc
@@ -268,6 +277,25 @@ export default class Header extends React.Component {
         </Portal>
 
         <Portal
+          closeOnOutsideClick={true}
+          closeOnEsc
+          isOpened={this.state.saveIsOpened}
+          onClose={() => { this.setState({ saveIsOpened: false});}}
+        >
+        <div className='modal-background'>
+          <div className='modal-header'>
+            <button className='close-button' onClick={() => {this.setState({ saveIsOpened: false });}}>✖</button>
+          </div>
+          <div className='modal-area'>
+            <div className='modal'>
+              {saveGist}
+            </div>
+          </div>
+        </div>
+      </Portal>
+
+        <Portal
+          closeOnOutsideClick={true}
           closeOnEsc
           isOpened={this.state.gistIsOpened}
           onClose={() => { this.setState({ gistIsOpened: false});}}
@@ -284,6 +312,7 @@ export default class Header extends React.Component {
         </div>
         </Portal>
       </div>
+
     );
   };
 };
