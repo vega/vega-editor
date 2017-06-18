@@ -1,0 +1,20 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "description": "A scatterplot encoding sepal and petal length differences from 3 different plant species.",
+  "data": {"url": "data/iris.json"},
+  "mark": "point",
+  "encoding": {
+    "x": {
+      "field": "sepalLength",
+      "type": "quantitative",
+      "scale": {"zero": false},
+      "axis": {"title": "sepal length"}
+    },
+    "y": {"field": "petalLength", "type": "quantitative",
+        "axis": {"title": "petal length"}
+    },
+    "color": {"field": "species", "type": "nominal"},
+    "opacity": {"field": "species", "type": "nominal"},
+    "shape": {"field": "species", "type": "nominal"}
+  }
+}
