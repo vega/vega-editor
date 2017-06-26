@@ -1,0 +1,66 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "data": {"url": "data/population_us.json"},
+  "mark": "bar",
+  "encoding": {
+    "column": {"field": "state","type": "nominal", "title":""},
+    "y": {
+      "aggregate": "sum",
+      "field": "population",
+      "type": "quantitative",
+      "axis": {
+        "title": "",
+        "grid": false
+      }
+    },
+    "x": {
+      "field": "age",
+      "type": "ordinal",
+      "axis": null,
+      "scale": {
+        "domain": [
+          "Under 5 Years",
+          "5 to 13 Years",
+          "14 to 17 Years",
+          "18 to 24 Years",
+          "25 to 44 Years",
+          "45 to 64 Years",
+          "65 Years and Over"
+        ],
+        "rangeStep": 15
+      }
+    },
+    "color": {
+      "field": "age",
+      "scale": {
+        "domain": [
+          "Under 5 Years",
+          "5 to 13 Years",
+          "14 to 17 Years",
+          "18 to 24 Years",
+          "25 to 44 Years",
+          "45 to 64 Years",
+          "65 Years and Over"
+        ],
+        "range": [
+          "#98abc5",
+          "#8a89a6",
+          "#7b6888",
+          "#6b486b",
+          "#a05d56",
+          "#d0743c",
+          "#ff8c00"
+        ]
+      },
+      "legend": {
+        "title": "Age"
+      }
+    }
+  },
+  "config": {
+    "cell": {
+      "clip": false,
+      "strokeOpacity": 0.4
+    }
+  }
+}
