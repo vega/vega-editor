@@ -9,6 +9,7 @@ import SplitPane from 'react-split-pane';
 import Error from '../error';
 import ErrorPane from '../error-pane';
 import Toolbar from '../toolbar';
+import {LAYOUT} from '../../constants';
 
 export default class Editor extends React.Component {
   static propTypes = {
@@ -60,15 +61,15 @@ export default class Editor extends React.Component {
   }
 
   render () {
-    if ((this.props.error != null || this.props.warningsLogger.warns.length > 0) && this.props.errorPane) {
-      return (
-        <SplitPane split='horizontal' defaultSize={window.innerWidth * 0.4}>
-          {this.getChart()}
-          <ErrorPane />
-        </SplitPane>
-      );
-    } else {
-      return this.getChart();
+    let defaultSize = `calc(100vh - ${LAYOUT.HeaderHeight}px)`
+    if (this.props.errorPane) {
+      defaultSize = window.innerWidth * 0.4;
     }
-  };
+    return (
+      <SplitPane split='horizontal' defaultSize={defaultSize}>
+        {this.getChart()}
+        <ErrorPane />
+      </SplitPane>
+    );
+  }
 }
