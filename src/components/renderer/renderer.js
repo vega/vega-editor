@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import * as vega from 'vega';
 import './index.css';
 import Vega from '../../constants'
-
+import * as vegaTooltip from 'vega-tooltip';
 
 export default class Editor extends React.Component {
   static propTypes = {
@@ -27,6 +27,7 @@ export default class Editor extends React.Component {
     view.run();
 
     this.refs.chart.style.width = 'auto';
+    vegaTooltip.vega(view);
     window.VEGA_DEBUG.view = view;
   }
 
@@ -43,6 +44,8 @@ export default class Editor extends React.Component {
       <div className='chart-container'>
         <div className='chart'>
           <div ref='chart'>
+          </div>
+          <div id="vis-tooltip" className="vg-tooltip">
           </div>
         </div>
       </div>
