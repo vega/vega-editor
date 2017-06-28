@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as vega from 'vega';
+import 'vega-tooltip/build/vega-tooltip.css';
 import './index.css';
 import Vega from '../../constants'
 import * as vegaTooltip from 'vega-tooltip';
