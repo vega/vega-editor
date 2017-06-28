@@ -1,7 +1,7 @@
 import * as vl from 'vega-lite';
 
 import { UPDATE_VEGA_SPEC, UPDATE_VEGA_LITE_SPEC, PARSE_SPEC, TOGGLE_AUTO_PARSE, CYCLE_RENDERER, SET_VEGA_EXAMPLE, SET_VEGA_LITE_EXAMPLE,
-  SHOW_COMPILED_VEGA_SPEC, SET_GIST_VEGA_SPEC, SET_GIST_VEGA_LITE_SPEC, SET_MODE, SHOW_ERROR_PANE } from '../../actions/editor';
+  SHOW_COMPILED_VEGA_SPEC, SET_GIST_VEGA_SPEC, SET_GIST_VEGA_LITE_SPEC, SET_MODE, SHOW_ERROR_PANE, LOG_ERROR } from '../../actions/editor';
 import { MODES, RENDERERS } from '../../constants';
 
 const JSON3 = require('../../../lib/json3-compactstringify');
@@ -209,6 +209,10 @@ export default (state = {
     case SHOW_ERROR_PANE: 
       return Object.assign({}, state, {
         errorPane: !state.errorPane
+      });
+    case LOG_ERROR:
+      return Object.assign({}, state, {
+        error: action.error
       });
     default:
       return state;

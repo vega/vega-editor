@@ -10,6 +10,7 @@ export const CYCLE_RENDERER = 'CYCLE_RENDERER';
 export const SHOW_COMPILED_VEGA_SPEC = 'SHOW_COMPILED_VEGA_SPEC';
 export const SET_MODE = 'SET_MODE';
 export const SHOW_ERROR_PANE = 'SHOW_ERROR_PANE';
+export const LOG_ERROR = 'LOG_ERROR';
 
 export function setMode (mode) {
   return {
@@ -92,5 +93,12 @@ export function showCompiledVegaSpec () {
 export function showErrorPane () {
   return {
     type: SHOW_ERROR_PANE
+  }
+}
+
+export function logError (err) {
+  return {
+    type: LOG_ERROR,
+    error: err
   }
 }

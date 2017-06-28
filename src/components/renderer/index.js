@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import Renderer from './renderer';
+import * as EditorActions from '../../actions/editor';
 
 function mapStateToProps (state, ownProps) {
   return {
@@ -12,4 +13,12 @@ function mapStateToProps (state, ownProps) {
   };
 }
 
-export default connect(mapStateToProps)(Renderer);
+const mapDispatchToProps = function (dispatch) {
+  return {
+    logError: (err) => {
+      dispatch(EditorActions.logError(err));
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Renderer);
