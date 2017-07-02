@@ -49,24 +49,41 @@ export default class Editor extends React.Component {
     this.renderVega(nextProps);
   }
 
-  render () {
-    let size = window.innerHeight * 0.6;
-    if (this.props.errorPane) {
-      size = window.innerHeight - LAYOUT.HeaderHeight;
-    }
+  renderChart() {
     return (
-      <SplitPane split='horizontal' size={size}>
-        <div className='chart-container'>
-          <Error />
-          <div className='chart'>
-            <div ref='chart'>
-            </div>
-            <div id='vis-tooltip' className='vg-tooltip'>
-            </div>
+      <div className='chart-container'>
+        <Error />
+        <div className='chart'>
+          <div ref='chart'>
           </div>
-          <Toolbar />
+          <div id='vis-tooltip' className='vg-tooltip'>
+          </div>
         </div>
-          <ErrorPane />
+        <Toolbar />
+      </div>
+    );
+  }
+
+  render () {
+    const splitSize = localStorage.getItem('splitPos');
+    const hideSize = localStorage.getItem('hideSplitPos');
+    const fullScreenSize = window.innerHeight - LAYOUT.HeaderHeight;
+    let onChange, size;
+    if (this.props.errorPane) {
+      if (!splitSize) {
+        localStorage.setItem('splitPos', window.innerHeight * 0.6)
+      }
+      onChange = size => localStorage.setItem('splitPos', size);
+      size = parseInt(splitSize, 10);
+    } else if (!this.props.errorPane) {
+      localStorage.setItem('hideSplitPos', fullScreenSize);
+      onChange = size => localStorage.setItem('hideSplitPos', size)
+      size = parseInt(hideSize, 10);
+    }
+    return ( 
+      <SplitPane split='horizontal' size={size} onChange={onChange}>
+        {this.renderChart()}
+        <ErrorPane />
       </SplitPane>
     );
   }
