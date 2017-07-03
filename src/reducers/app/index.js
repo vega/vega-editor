@@ -5,8 +5,6 @@ import { UPDATE_VEGA_SPEC, UPDATE_VEGA_LITE_SPEC, PARSE_SPEC, TOGGLE_AUTO_PARSE,
 import { MODES, RENDERERS } from '../../constants';
 import {validateVegaLite} from './validate';
 
-const JSON3 = require('../../../lib/json3-compactstringify');
-
 class LocalLogger {
   warns = [];
   infos = [];
