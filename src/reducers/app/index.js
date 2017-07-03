@@ -142,7 +142,7 @@ export default (state = {
           error: e.message,
           editorString: action.spec,
           warningsLogger: currLogger,
-          selectedExample: 'vega-lite-edited'
+          selectedExample: null
         });
       }
       return Object.assign({}, state, {
@@ -152,7 +152,7 @@ export default (state = {
         editorString: action.spec,
         error: null,
         warningsLogger: currLogger,
-        selectedExample: 'vega-lite-edited'
+        selectedExample: null
       });
     }
     case SET_GIST_VEGA_SPEC:
