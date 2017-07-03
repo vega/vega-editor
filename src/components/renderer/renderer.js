@@ -9,7 +9,6 @@ import Error from '../error';
 import ErrorPane from '../error-pane';
 import Toolbar from '../toolbar';
 import SplitPane from 'react-split-pane';
-import {LAYOUT} from '../../constants';
 
 export default class Editor extends React.Component {
   static propTypes = {
@@ -45,8 +44,8 @@ export default class Editor extends React.Component {
     this.renderVega(this.props);
   }
 
-  componentWillReceiveProps (nextProps) {
-    this.renderVega(nextProps);
+  componentDidUpdate () {
+    this.renderVega(this.props);
   }
 
   renderChart() {
@@ -65,26 +64,17 @@ export default class Editor extends React.Component {
   }
 
   render () {
-    const splitSize = localStorage.getItem('splitPos');
-    const hideSize = localStorage.getItem('hideSplitPos');
-    const fullScreenSize = window.innerHeight - LAYOUT.HeaderHeight;
-    let onChange, size;
     if (this.props.errorPane) {
-      if (!splitSize) {
-        localStorage.setItem('splitPos', window.innerHeight * 0.6)
-      }
-      onChange = size => localStorage.setItem('splitPos', size);
-      size = parseInt(splitSize, 10);
-    } else if (!this.props.errorPane) {
-      localStorage.setItem('hideSplitPos', fullScreenSize);
-      onChange = size => localStorage.setItem('hideSplitPos', size)
-      size = parseInt(hideSize, 10);
+      return ( 
+        <SplitPane split='horizontal' defaultSize={window.innerHeight * 0.6}>
+          {this.renderChart()}
+          <ErrorPane />
+        </SplitPane>
+      );
+    } else {
+      return (
+        this.renderChart()
+      );
     }
-    return ( 
-      <SplitPane split='horizontal' size={size} onChange={onChange}>
-        {this.renderChart()}
-        <ErrorPane />
-      </SplitPane>
-    );
   }
 }
