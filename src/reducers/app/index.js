@@ -75,7 +75,8 @@ export default (state = {
         return Object.assign({}, state, {
           error: e.message,
           editorString: action.spec,
-          warningsLogger: logger
+          warningsLogger: logger,
+          selectedExample: 'vega-edited'
         });
       }
       return Object.assign({}, state, {
@@ -83,7 +84,8 @@ export default (state = {
         mode: MODES.Vega,
         editorString: action.spec,
         error: null,
-        warningsLogger: logger
+        warningsLogger: logger,
+        selectedExample: 'vega-edited'
       });
     case SET_VEGA_EXAMPLE:
       try {
@@ -139,7 +141,8 @@ export default (state = {
         return Object.assign({}, state, {
           error: e.message,
           editorString: action.spec,
-          warningsLogger: currLogger
+          warningsLogger: currLogger,
+          selectedExample: 'vega-lite-edited'
         });
       }
       return Object.assign({}, state, {
@@ -148,7 +151,8 @@ export default (state = {
         mode: MODES.VegaLite,
         editorString: action.spec,
         error: null,
-        warningsLogger: currLogger
+        warningsLogger: currLogger,
+        selectedExample: 'vega-lite-edited'
       });
     }
     case SET_GIST_VEGA_SPEC:
