@@ -71,7 +71,7 @@ export default class Editor extends React.Component {
 
   componentWillReceiveProps(nextProps) {
 
-    if(nextProps.parse) {
+    if (nextProps.parse) {
       if (this.props.mode === MODES.Vega) {
         this.props.updateVegaSpec(this.spec);
       } else if (this.props.mode === MODES.VegaLite) {
@@ -82,7 +82,7 @@ export default class Editor extends React.Component {
   }
 
    manualParseSpec() {
-    if(!this.props.autoParse) {
+    if (!this.props.autoParse) {
       return (
         <div className="editor-header"> 
           <button id='parse-button' onClick={() => this.props.parseSpec(true)}>Parse</button>
