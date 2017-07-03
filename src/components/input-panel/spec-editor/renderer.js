@@ -46,12 +46,14 @@ export default class Editor extends React.Component {
   }
 
   handleEditorChange (spec) {
-    if(this.props.autoParse) {
+    if (this.props.autoParse) {
       if (this.props.mode === MODES.Vega) {
         this.props.updateVegaSpec(spec);
       } else if (this.props.mode === MODES.VegaLite) {
         this.props.updateVegaLiteSpec(spec);
       }
+    } else {
+      this.props.updateEditorString(spec);
     }
     this.spec = spec;
     if (hashHistory.getCurrentLocation().pathname.indexOf('/edited') === -1) {
