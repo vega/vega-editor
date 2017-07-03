@@ -76,7 +76,7 @@ export default (state = {
           error: e.message,
           editorString: action.spec,
           warningsLogger: logger,
-          selectedExample: 'vega-edited'
+          selectedExample: null
         });
       }
       return Object.assign({}, state, {
@@ -85,7 +85,7 @@ export default (state = {
         editorString: action.spec,
         error: null,
         warningsLogger: logger,
-        selectedExample: 'vega-edited'
+        selectedExample: null
       });
     case SET_VEGA_EXAMPLE:
       try {
