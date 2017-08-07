@@ -63,6 +63,7 @@ fi
 
 eval $VEGA_OP "$CWD/node_modules/vega/docs/examples" "$SPEC/vega"
 eval $VEGA_LITE_OP "$CWD/node_modules/vega-lite/examples/specs" "$SPEC/vega-lite"
-echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/examples/vl-examples.json` > app/vl-specs.js
+echo "var VL_SPECS = {};" > app/vl-specs.js
+echo "var VL_SPECS = "`cat $CWD/node_modules/vega-lite/_data/examples.json` > app/vl-specs.js
 eval $COMPASSQL_OP "$CWD/node_modules/compassql/examples/specs" "$SPEC/compassql"
 echo "var CQL_SPECS = "`cat $CWD/node_modules/compassql/examples/cql-examples.json` > app/cql-specs.js

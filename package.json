@@ -36,14 +36,14 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "ace-builds": "ajaxorg/ace-builds",
-    "compassql": "^0.13.0",
+    "compassql": "0.19.6",
     "d3": "^4.3.0",
     "d3-cloud": "^1.2.1",
     "d3-geo-projection": "^0.2.15",
     "topojson": "^1.6.24",
-    "vega": "3.0.0-beta.30",
+    "vega": "3.0.0-rc2",
     "vega-datasets": "vega/vega-datasets#gh-pages",
-    "vega-lite": "2.0.0-beta.1"
+    "vega-lite": "2.0.0-beta.10"
   },
   "devDependencies": {
     "chokidar": "^1.2.0"

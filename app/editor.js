@@ -355,7 +355,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
-      var topItem = childGrp.getTopSpecQueryItem();
+      var topItem = cql.model.getTopSpecQueryItem(childGrp);
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         return getRankingSummaryText(orderGroupBy, topItem);
