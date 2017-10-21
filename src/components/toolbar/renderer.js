@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import './index.css';
 import * as vega from 'vega';
@@ -11,10 +10,9 @@ const getVersion = (mode) => {
 
 export default class Toolbar extends React.Component {
   static propTypes = {
-    error: PropTypes.string,
-    renderer: PropTypes.string,
-    autoParse: PropTypes.bool,
-    tooltip: PropTypes.bool
+    error: React.PropTypes.string,
+    renderer: React.PropTypes.string,
+    tooltip: React.PropTypes.bool
   }
 
   showErrorAndWarnings() {
@@ -40,11 +38,6 @@ export default class Toolbar extends React.Component {
         <div className='status'>
           {
             `${this.props.mode} version ${getVersion(this.props.mode)}`
-          }
-        </div>
-        <div className='autoParse' onClick={this.props.toggleAutoParse}>
-          {
-            this.props.autoParse ? 'Parse: auto' : 'Parse: manual'
           }
         </div>
         <div className='tooltip-toggle' onClick={this.props.showTooltip}>

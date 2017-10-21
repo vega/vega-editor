@@ -1,0 +1,23 @@
+.data-button {
+    font-size: 12px;
+    background-color: #767676;
+    width: 80px;
+    height: 25px;
+    color: white;
+    display: flex;
+    justify-content: center; /* align horizontal */
+    align-items: center;
+    border-radius: 5px;
+    float: right;
+}
+
+.button-container {
+    padding:10px;
+}
+
+
+.table-container {
+    height: 20px;
+    overflow: scroll;
+}
+

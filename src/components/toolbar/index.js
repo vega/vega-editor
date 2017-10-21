@@ -7,7 +7,7 @@ function mapStateToProps(state, ownProps) {
     renderer: state.renderer,
     error: state.error,
     mode: state.mode,
-    autoParse: state.autoParse,
+    autoParse: false,
     warningsLogger: state.warningsLogger,
     tooltip: state.tooltip
   };
