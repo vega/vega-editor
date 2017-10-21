@@ -1,10 +1,8 @@
 import React from 'react';
-import MonacoEditor from 'react-monaco-editor';
 import {connect} from 'react-redux';
-
+import MonacoEditor from 'react-monaco-editor';
 import * as EditorActions from '../../../actions/editor';
-import CompiledSpecDisplayHeader from '../compiled-spec-header';
-
+import CompiledSpecDisplayHeader from '../compiled-spec-header'
 const JSON3 = require('../../../../lib/json3-compactstringify');
 
 class CompiledSpecDisplay extends React.Component {
@@ -28,6 +26,8 @@ class CompiledSpecDisplay extends React.Component {
     )
   }
 }
+
+
 
 function mapStateToProps(state, ownProps) {
   return {

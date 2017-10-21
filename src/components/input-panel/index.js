@@ -1,28 +1,21 @@
-import './index.css';
-
-import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import SplitPane from 'react-split-pane';
-
-import {LAYOUT, MODES} from '../../constants';
+import SpecEditor from './spec-editor';
 import CompiledSpecDisplay from './compiled-spec-display';
 import CompiledSpecHeader from './compiled-spec-header';
-import SpecEditor from './spec-editor';
+import SplitPane from 'react-split-pane';
+import {MODES, LAYOUT} from '../../constants';
+import {connect} from 'react-redux';
+import './index.css'
 
 class InputPanel extends React.Component {
-  static propTypes = {
-    compiledVegaSpec: PropTypes.bool,
-    mode: PropTypes.string
-  }
-
   getInnerPanes() {
+    const {mode} = this.props;
     const innerPanes = [<SpecEditor key='editor' />];
-    if (this.props.mode === MODES.VegaLite) {
+    if (mode === MODES.VegaLite) {
       if (this.props.compiledVegaSpec) {
-        innerPanes.push(<CompiledSpecDisplay key='compiled' />);
+        innerPanes.push(<CompiledSpecDisplay key='compiled'/>);
       } else {
-        innerPanes.push(<CompiledSpecHeader key='compiledSpecHeader' />)
+        innerPanes.push(<CompiledSpecHeader key='compiledSpecHeader'/>)
       }
     }
     return innerPanes;
@@ -31,15 +24,21 @@ class InputPanel extends React.Component {
   render() {
     const innerPanes = this.getInnerPanes();
 
+    let outerComponent;
     if (this.props.mode === MODES.VegaLite && this.props.compiledVegaSpec) {
-        return <SplitPane split="horizontal" defaultSize={(window.innerHeight - LAYOUT.HeaderHeight) / innerPanes.length} pane2Style={{display: 'flex'}}>
-          {innerPanes}
-        </SplitPane>;
+        outerComponent = React.createElement(SplitPane,
+        {
+          split: 'horizontal',
+          defaultSize: (window.innerHeight - LAYOUT.HeaderHeight) / innerPanes.length,
+          pane2Style: {display: 'flex'}
+        },
+        innerPanes);
     } else {
-      return <div className={'full-height-wrapper'}>
+      outerComponent = <div className={'full-height-wrapper'}>
         {innerPanes}
       </div>
     }
+    return outerComponent;
   }
 }
 

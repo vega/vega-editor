@@ -27,6 +27,7 @@ export default class Header extends React.Component {
       exampleIsOpened: false
     });
     hashHistory.push('/examples/vega/' + name);
+    location.reload();
   }
 
   onSelectNewVega() {
@@ -38,6 +39,7 @@ export default class Header extends React.Component {
       exampleIsOpened: false
     });
     hashHistory.push('/examples/vega-lite/' + name);
+    location.reload();
   }
 
   onSelectNewVegaLite() {
@@ -54,7 +56,7 @@ export default class Header extends React.Component {
     hashHistory.push('/gist/vega/' + username + '/' + id);
   }
 
-  onSelectVegaLiteGist(gistUrl) { 
+  onSelectVegaLiteGist(gistUrl) {
     this.setState({
       gistIsOpened: false,
       url: ''
@@ -180,10 +182,10 @@ export default class Header extends React.Component {
           <input className='gist-input' type='text' placeholder='enter gist url here' value={this.state.url}
           onChange={this.handleChange.bind(this)}/>
 
-          <button className='gist-button' onClick={this.onSelectVegaGist.bind(this, this.state.url)}> 
+          <button className='gist-button' onClick={this.onSelectVegaGist.bind(this, this.state.url)}>
             Vega
           </button>
-          <button className='gist-button' onClick={this.onSelectVegaLiteGist.bind(this, this.state.url)}> 
+          <button className='gist-button' onClick={this.onSelectVegaLiteGist.bind(this, this.state.url)}>
             Vega-Lite
           </button>
         </div>
