@@ -297,7 +297,7 @@ function getRankingSummaryText(orderBy, specM) {
 * So the event signals can be garbage-collected when a group exits
 */
 function detachViewsInGroup(item) {
-  if (cql.model.isSpecQueryGroup(item)) {
+  if (cql.result.isResultTree(item)) {
     item.items.forEach(function(childItem) {
       detachViewsInGroup(childItem);
     });
@@ -355,7 +355,7 @@ ved.cql.renderGroups = function(sel, group, indexPrefix) {
 
   groupSelections.select('span.groupheader')
     .attr('title', function(childGrp) {
-      var topItem = cql.model.getTopSpecQueryItem(childGrp);
+      var topItem = cql.result.getTopResultTreeItem(childGrp);
       var orderGroupBy = group.orderGroupBy;
       if (orderGroupBy) {
         return getRankingSummaryText(orderGroupBy, topItem);
