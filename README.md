@@ -1,5 +1,9 @@
 # Vega Editor
 
+
+**Note that this repo is hosting the old editor. For the new editor, go to https://github.com/vega/editor.**
+
+
 The **Vega editor** is a web application for authoring and testing [Vega](http://github.com/vega/vega) visualizations. It includes a number of example specifications that showcase both the visual encodings and interaction techniques supported by Vega.
 
 ### Usage Instructions
