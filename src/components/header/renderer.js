@@ -104,15 +104,34 @@ export default class Header extends React.Component {
     );
 
     const customButton = (
-      <div
-        onMouseOver={(e) => {
-          const targetRect = e.target.getBoundingClientRect();
-          this.setState({
-            customIsOpened: true,
-            left: targetRect.left
-          });
-        }}>
-        {'New'}
+      <div>
+        <span
+        onClick={() => {
+          if(this.props.mode === MODES.Vega) {
+            this.onSelectNewVega();
+          } else {
+            this.onSelectNewVegaLite();
+          }
+        }}
+        >
+          {'New'}
+        </span>
+        <span
+        className="caret"
+        onClick={() => {
+          if(this.props.mode === MODES.Vega) {
+            this.onSelectNewVega();
+          } else {
+            this.onSelectNewVegaLite();
+          }
+        }}
+          onMouseOver={(e) => {
+            const targetRect = e.target.getBoundingClientRect();
+            this.setState({
+              customIsOpened: true,
+              left: targetRect.left
+            });
+          }} />
       </div>
     )
 
